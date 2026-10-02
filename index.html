@@ -1,790 +1,692 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Pinn</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-      :root {
-        --accent: #1a7a3c;
-        --accent-light: #e8f5ee;
-        --accent-mid: rgba(26,122,60,0.2);
-        --bg: #fff;
-        --bg2: #f5f5f5;
-        --bg3: #fafafa;
-        --border: #f0f0f0;
-        --border2: #ececec;
-        --text: #111;
-        --text2: #666;
-        --text3: #bbb;
-        --bubble-sent-bg: var(--accent);
-        --bubble-sent-color: #fff;
-        --bubble-recv-bg: var(--bg2);
-        --bubble-recv-color: var(--text);
-        --font-size: 13px;
-        --panel-bg: #fff;
-        --header-bg: #fff;
-        --input-bg: var(--bg2);
-      }
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-      /* ── DARK theme ── */
-      body.theme-dark {
-        --bg: #1c1c1e; --bg2: #2c2c2e; --bg3: #242426;
-        --border: #3a3a3c; --border2: #3a3a3c;
-        --text: #f0f0f0; --text2: #aaa; --text3: #666;
-        --bubble-recv-bg: #2c2c2e; --bubble-recv-color: #f0f0f0;
-        --panel-bg: #1c1c1e; --header-bg: #1c1c1e; --input-bg: #2c2c2e;
-        border-color: #3a3a3c;
-      }
-      /* ── BLACK theme ── */
-      body.theme-black {
-        --bg: #000; --bg2: #111; --bg3: #0a0a0a;
-        --border: #222; --border2: #222;
-        --text: #fff; --text2: #999; --text3: #555;
-        --bubble-recv-bg: #111; --bubble-recv-color: #fff;
-        --panel-bg: #000; --header-bg: #000; --input-bg: #111;
-        border-color: #333;
-      }
-      /* ── BLUE theme ── */
-      body.theme-blue {
-        --accent: #2563eb; --accent-light: #eff6ff; --accent-mid: rgba(37,99,235,0.2);
-        --bubble-sent-bg: #2563eb;
-      }
-      /* ── PINK theme ── */
-      body.theme-pink {
-        --accent: #db2777; --accent-light: #fdf2f8; --accent-mid: rgba(219,39,119,0.2);
-        --bubble-sent-bg: #db2777;
-      }
+  <!-- Primary -->
+  <title>Pinn — Hidden AI Desktop App for Mac & Windows</title>
+  <meta name="description" content="Pinn is a free, invisible AI assistant for macOS and Windows. Press a shortcut to summon it, ask anything, dismiss it. No dock icon. No trace. Screen-share safe." />
+  <meta name="keywords" content="hidden AI, desktop AI, AI assistant, macOS AI, Windows AI, invisible AI, Pinn, free AI app, stealth AI, always on top AI" />
+  <meta name="author" content="Pinn" />
+  <meta name="theme-color" content="#1a7a3c" />
 
-      * { margin: 0; padding: 0; box-sizing: border-box; }
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Pinn — Hidden AI Desktop App" />
+  <meta property="og:description" content="A free AI assistant that lives in your keyboard. Press a shortcut, get an answer, disappear. Invisible to screen recording. No account needed." />
+  <meta property="og:image" content="https://raw.githubusercontent.com/disow2026-eng/Pinn/main/landing/og-image.png" />
+  <meta property="og:url" content="https://disow2026-eng.github.io/Pinn/landing/" />
+  <meta property="og:site_name" content="Pinn" />
 
-      body {
-        font-family: 'Inter', -apple-system, sans-serif;
-        background: var(--bg);
-        height: 100vh;
-        border-radius: 20px;
-        overflow: hidden;
-        user-select: none;
-        display: flex;
-        flex-direction: column;
-        border: 1px solid var(--border);
-        position: relative;
-        transition: background 0.2s, color 0.2s;
-        font-size: var(--font-size);
-      }
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Pinn — Hidden AI Desktop App" />
+  <meta name="twitter:description" content="Invisible AI on your desktop. Summon with a shortcut. Screen-share safe. Free." />
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/disow2026-eng/Pinn/main/landing/og-image.png" />
 
-      /* ── header ── */
-      #header {
-        -webkit-app-region: drag;
-        padding: 14px 16px 12px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-shrink: 0;
-        background: var(--header-bg);
-        border-bottom: 1px solid var(--border);
-        transition: background 0.2s;
-      }
-      #header-left { display: flex; align-items: center; gap: 8px; -webkit-app-region: no-drag; }
-      #header-name { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; -webkit-app-region: drag; }
-      #header-name .dot  { color: var(--accent); }
-      #header-name .text { color: var(--text); }
-      #header-right { display: flex; align-items: center; gap: 6px; -webkit-app-region: no-drag; }
+  <!-- Favicon (inline SVG → data URI) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0a'/%3E%3Ctext x='6' y='24' font-family='Georgia,serif' font-size='22' font-weight='900' fill='%231a7a3c'%3E.%3C/text%3E%3Ctext x='13' y='24' font-family='Georgia,serif' font-size='16' font-weight='900' fill='white'%3Ep%3C/text%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230a0a0a'/%3E%3Ctext x='28' y='136' font-family='Georgia,serif' font-size='120' font-weight='900' fill='%231a7a3c'%3E.%3C/text%3E%3Ctext x='72' y='136' font-family='Georgia,serif' font-size='90' font-weight='900' fill='white'%3Ep%3C/text%3E%3C/svg%3E" />
 
-      .icon-btn {
-        -webkit-app-region: no-drag;
-        width: 26px; height: 26px;
-        background: transparent; border: none; border-radius: 8px;
-        cursor: pointer; color: var(--text3);
-        display: flex; align-items: center; justify-content: center;
-        transition: all 0.15s; flex-shrink: 0;
-      }
-      .icon-btn:hover { background: var(--bg2); color: var(--text2); }
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --g: #1a7a3c; --g-light: #f0f9f4; --g-mid: rgba(26,122,60,.12);
+      --text: #0d0d0d; --muted: #64748b; --muted2: #94a3b8;
+      --border: #e8eaed; --bg2: #f8fafc; --sb: 224px;
+      --font-display: 'Bricolage Grotesque', -apple-system, sans-serif;
+      --font-body: 'DM Sans', -apple-system, sans-serif;
+      --font-mono: 'DM Mono', 'SF Mono', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-body); background: #fff; color: var(--text); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 
-      #close-btn {
-        -webkit-app-region: no-drag;
-        width: 12px; height: 12px; background: #e0e0e0;
-        border: none; border-radius: 50%; cursor: pointer; color: transparent;
-        transition: all 0.15s; margin-left: 2px;
-      }
-      #close-btn:hover { background: #ff5f57; }
+    /* ── TOP BAR ── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 150;
+      height: 56px; display: flex; align-items: center; padding: 0 28px;
+      background: rgba(255,255,255,0.96); backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-family: var(--font-display); font-size: 18px; font-weight: 800;
+      letter-spacing: -.5px; text-decoration: none; color: var(--text);
+    }
+    .logo span { color: var(--g); }
 
-      /* ── slide panels (sessions + settings) ── */
-      .slide-panel {
-        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-        background: var(--panel-bg);
-        z-index: 50; display: flex; flex-direction: column;
-        border-radius: 20px;
-        transition: transform 0.22s cubic-bezier(0.4,0,0.2,1);
-      }
-      #sessions-panel { transform: translateX(-100%); }
-      #sessions-panel.open { transform: translateX(0); }
-      #settings-panel { transform: translateX(100%); }
-      #settings-panel.open { transform: translateX(0); }
+    /* mobile hamburger */
+    #sb-toggle {
+      display: none; margin-left: auto;
+      background: none; border: none; cursor: pointer; padding: 6px; color: var(--text);
+    }
 
-      .panel-header {
-        padding: 14px 16px 12px;
-        display: flex; align-items: center; justify-content: space-between;
-        border-bottom: 1px solid var(--border); flex-shrink: 0;
-      }
-      .panel-header span { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
-      .panel-close {
-        background: none; border: none; cursor: pointer;
-        color: var(--text3); font-size: 16px; padding: 2px 6px;
-        border-radius: 6px; transition: all 0.15s; font-family: 'Inter', sans-serif;
-      }
-      .panel-close:hover { background: var(--bg2); color: var(--text); }
+    /* ── LEFT SIDEBAR ── */
+    #sidebar {
+      position: fixed; top: 56px; left: 0; bottom: 0; width: var(--sb);
+      background: #fff;
+      display: flex; flex-direction: column;
+      z-index: 140; overflow-y: auto; scrollbar-width: none;
+      border-right: 1px solid var(--border);
+      transition: transform .28s cubic-bezier(.4,0,.2,1);
+    }
+    #sidebar::-webkit-scrollbar { display: none; }
 
-      /* sessions */
-      #new-chat-btn {
-        background: var(--accent); color: #fff; border: none;
-        border-radius: 100px; padding: 6px 14px;
-        font-size: 12px; font-weight: 600; cursor: pointer;
-        transition: opacity 0.15s; font-family: 'Inter', sans-serif;
-      }
-      #new-chat-btn:hover { opacity: 0.85; }
+    .sb-section { padding: 22px 12px 6px; }
+    .sb-label {
+      font-family: var(--font-body); font-size: 9.5px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: #c0c8d0; margin-bottom: 4px; padding: 0 10px;
+    }
+    .sb-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 10px; border-radius: 8px;
+      text-decoration: none; font-family: var(--font-body);
+      font-size: 13.5px; font-weight: 500; color: var(--muted);
+      transition: all .13s; cursor: pointer; border: none; background: none;
+      width: 100%; text-align: left; letter-spacing: -.01em;
+    }
+    .sb-link:hover { background: var(--bg2); color: var(--text); }
+    .sb-link.active { background: var(--g-light); color: var(--g); font-weight: 600; }
+    .sb-link svg { flex-shrink: 0; opacity: .45; }
+    .sb-link.active svg { opacity: 1; color: var(--g); }
+    .sb-link:hover svg { opacity: .7; }
 
-      #sessions-list { flex: 1; overflow-y: auto; scrollbar-width: none; padding: 8px 0; }
-      #sessions-list::-webkit-scrollbar { display: none; }
+    .sb-divider { height: 1px; background: var(--border); margin: 8px 12px; }
 
-      .session-item {
-        padding: 10px 16px; cursor: pointer;
-        transition: background 0.1s; border-bottom: 1px solid var(--border);
-      }
-      .session-item:hover { background: var(--bg2); }
-      .session-item.active { background: var(--accent-light); }
-      .session-title { font-size: 12.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
-      .session-date { font-size: 10.5px; color: var(--text3); font-weight: 500; }
-      .sessions-empty { text-align: center; padding: 40px 20px; font-size: 12px; color: var(--text3); }
+    .sb-download {
+      margin: 12px; border-radius: 10px;
+      background: var(--g); padding: 11px 14px;
+      text-decoration: none; display: flex; align-items: center; gap: 8px;
+      font-family: var(--font-body); font-size: 13px; font-weight: 700; color: #fff;
+      letter-spacing: -.01em;
+      box-shadow: 0 4px 16px rgba(26,122,60,.28);
+      transition: all .15s;
+    }
+    .sb-download:hover { background: #1d8f45; transform: translateY(-1px); box-shadow: 0 7px 20px rgba(26,122,60,.35); }
+    .sb-bottom { margin-top: auto; padding-bottom: 20px; }
 
-      /* ── settings content ── */
-      #settings-body { flex: 1; overflow-y: auto; scrollbar-width: none; padding: 16px; display: flex; flex-direction: column; gap: 20px; }
-      #settings-body::-webkit-scrollbar { display: none; }
+    /* ── MAIN CONTENT OFFSET ── */
+    #main { margin-left: var(--sb); padding-top: 56px; }
 
-      .setting-section h4 {
-        font-size: 10px; font-weight: 700; letter-spacing: 1px;
-        text-transform: uppercase; color: var(--text3); margin-bottom: 10px;
-      }
+    /* ── RESPONSIVE ── */
+    @media (max-width: 780px) {
+      :root { --sb: 240px; }
+      #sidebar { transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); box-shadow: 8px 0 40px rgba(0,0,0,.3); }
+      #sb-toggle { display: flex; }
+      #sb-overlay { position: fixed; inset: 0; z-index: 139; background: rgba(0,0,0,.4); display: none; }
+      #sb-overlay.open { display: block; }
+      #main { margin-left: 0; }
+    }
 
-      /* theme swatches */
-      .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-      .theme-swatch {
-        display: flex; flex-direction: column; align-items: center; gap: 5px;
-        cursor: pointer; padding: 6px 2px; border-radius: 10px;
-        transition: background 0.1s; border: 2px solid transparent;
-      }
-      .theme-swatch:hover { background: var(--bg2); }
-      .theme-swatch.active { border-color: var(--accent); background: var(--accent-light); }
-      .swatch-circle { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border2); }
-      .swatch-label { font-size: 9px; font-weight: 600; color: var(--text2); text-align: center; }
+    /* HERO */
+    .hero {
+      min-height: calc(100vh - 56px); display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 72px 48px 72px;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      border: 1px solid var(--border); border-radius: 100px;
+      padding: 5px 15px; font-family: var(--font-body); font-size: 12px; font-weight: 500;
+      color: var(--muted); margin-bottom: 40px; letter-spacing: .01em;
+    }
+    .badge-dot { width: 6px; height: 6px; background: var(--g); border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-      /* font size */
-      .font-btns { display: flex; gap: 8px; }
-      .font-btn {
-        flex: 1; padding: 8px; border: 1.5px solid var(--border2);
-        background: var(--bg); color: var(--text); border-radius: 10px;
-        cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600;
-        transition: all 0.15s;
-      }
-      .font-btn:hover { border-color: var(--accent); }
-      .font-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(48px, 6.5vw, 86px); font-weight: 800;
+      letter-spacing: -2.5px; line-height: 1.0; max-width: 720px; margin-bottom: 24px;
+    }
+    h1 em { font-style: normal; color: var(--g); }
 
-      /* hotkey */
-      #hotkey-input {
-        width: 100%; padding: 10px 14px;
-        border: 1.5px solid var(--border2); border-radius: 10px;
-        background: var(--bg); color: var(--text);
-        font-size: 13px; font-family: 'Inter', sans-serif; font-weight: 600;
-        text-align: center; cursor: pointer; outline: none;
-        transition: border-color 0.2s;
-      }
-      #hotkey-input:focus { border-color: var(--accent); }
-      #hotkey-input.recording { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
-      .hotkey-hint { font-size: 11px; color: var(--text3); text-align: center; margin-top: 6px; }
+    .sub {
+      font-family: var(--font-body); font-size: 18px; font-weight: 400;
+      color: var(--muted); max-width: 400px; line-height: 1.72; margin-bottom: 44px;
+      letter-spacing: -.01em;
+    }
 
-      #save-settings-btn {
-        width: 100%; padding: 10px; background: var(--accent); color: #fff;
-        border: none; border-radius: 10px; font-size: 13px; font-weight: 600;
-        cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity 0.15s;
-        margin-top: 4px;
-      }
-      #save-settings-btn:hover { opacity: 0.85; }
+    .btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 16px; }
+    .hero-dl-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 72px;
+      font-family: var(--font-body); flex-wrap: wrap; justify-content: center;
+    }
+    .hero-dl-link {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; font-weight: 500; color: var(--muted2);
+      text-decoration: none; transition: color .14s; letter-spacing: -.01em;
+    }
+    .hero-dl-link:hover { color: var(--text); }
+    .hero-dl-sep { color: var(--border); font-size: 14px; }
+    .btn-primary {
+      background: var(--g); color: #fff;
+      font-family: var(--font-body); font-size: 14px; font-weight: 600; letter-spacing: -.01em;
+      padding: 13px 28px; border-radius: 100px; text-decoration: none;
+      box-shadow: 0 4px 18px rgba(26,122,60,.28); transition: all .15s;
+    }
+    .btn-primary:hover { background: #1d8f45; transform: translateY(-1px); box-shadow: 0 7px 22px rgba(26,122,60,.34); }
+    .btn-ghost {
+      background: transparent; color: var(--muted);
+      font-family: var(--font-body); font-size: 14px; font-weight: 500; letter-spacing: -.01em;
+      padding: 13px 24px; border-radius: 100px; text-decoration: none;
+      border: 1px solid var(--border); transition: all .15s;
+    }
+    .btn-ghost:hover { border-color: #c8cdd4; color: var(--text); }
 
-      /* ── messages ── */
-      #messages {
-        flex: 1; overflow-y: auto;
-        padding: 14px 14px 8px;
-        display: flex; flex-direction: column; gap: 8px;
-        scrollbar-width: none; background: var(--bg);
-        transition: background 0.2s;
-      }
-      #messages::-webkit-scrollbar { display: none; }
+    /* MOCKUP */
+    .mockup {
+      width: 280px; background: #fff; border-radius: 16px;
+      border: 1px solid #ddd; overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,.09), 0 4px 16px rgba(0,0,0,.05);
+    }
+    .mh { padding: 10px 13px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0f0f0; }
+    .mh-logo { font-size: 13px; font-weight: 800; }
+    .mh-logo span { color: var(--g); }
+    .mh-close { width: 9px; height: 9px; background: #e0e0e0; border-radius: 50%; }
+    .msgs { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .r { background: #f5f5f5; color: #111; font-size: 11px; line-height: 1.55; padding: 7px 10px; border-radius: 12px 12px 12px 3px; align-self: flex-start; max-width: 82%; font-weight: 500; }
+    .s { background: var(--g); color: #fff; font-size: 11px; line-height: 1.55; padding: 7px 10px; border-radius: 12px 12px 3px 12px; align-self: flex-end; max-width: 82%; }
+    .minput { margin: 4px 10px 10px; background: #f5f5f5; border-radius: 10px; padding: 7px 10px 7px 12px; display: flex; align-items: center; justify-content: space-between; }
+    .minput span { font-size: 10px; color: #c0c0c0; }
+    .msend { width: 20px; height: 20px; background: var(--g); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
-      .msg-row { display: flex; flex-direction: column; animation: slide-up 0.18s ease; }
-      @keyframes slide-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-      .msg-row.sent  { align-items: flex-end; }
-      .msg-row.recv  { align-items: flex-start; }
+    .hint { margin-top: 18px; font-size: 12px; color: #bbb; }
+    .kbd { background: #f4f4f4; border: 1px solid #e0e0e0; border-radius: 5px; padding: 2px 7px; font-size: 11px; color: #777; }
 
-      .bubble {
-        max-width: 82%; padding: 9px 13px;
-        font-size: var(--font-size); line-height: 1.5;
-        word-break: break-word; white-space: pre-wrap; font-weight: 400;
-      }
-      .sent .bubble {
-        background: var(--bubble-sent-bg); color: var(--bubble-sent-color);
-        border-radius: 16px 16px 4px 16px;
-        box-shadow: 0 2px 10px var(--accent-mid);
-      }
-      .recv .bubble {
-        background: var(--bubble-recv-bg); color: var(--bubble-recv-color);
-        border-radius: 16px 16px 16px 4px; font-weight: 500;
-      }
+    /* FEATURES */
+    .section { padding: 100px 48px; }
+    .section.alt { background: var(--bg2); }
+    .label {
+      text-align: center; font-family: var(--font-body);
+      font-size: 11px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase;
+      color: var(--g); margin-bottom: 12px;
+    }
+    .title {
+      text-align: center; font-family: var(--font-display);
+      font-size: clamp(28px, 3.2vw, 44px); font-weight: 800;
+      letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 56px; color: var(--text);
+    }
 
-      .msg-time { font-size: 9px; color: var(--text3); margin-top: 3px; padding: 0 4px; font-weight: 500; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; max-width: 880px; margin: 0 auto; }
+    .card {
+      background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 24px;
+      transition: box-shadow .22s, transform .22s;
+    }
+    .card:hover { box-shadow: 0 8px 28px rgba(0,0,0,.07); transform: translateY(-2px); }
+    .card-ic { width: 38px; height: 38px; background: var(--g-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; color: var(--g); }
+    .card h3 { font-family: var(--font-display); font-size: 15px; font-weight: 700; letter-spacing: -.3px; margin-bottom: 7px; }
+    .card p { font-family: var(--font-body); font-size: 13.5px; color: var(--muted); line-height: 1.65; }
 
-      #typing {
-        display: none; align-self: flex-start; align-items: center; gap: 4px;
-        background: var(--bg2); border-radius: 16px 16px 16px 4px; padding: 11px 14px;
-      }
-      #typing.on { display: flex; }
-      .t-dot { width: 5px; height: 5px; background: var(--text3); border-radius: 50%; animation: pulse 1.3s ease-in-out infinite; }
-      .t-dot:nth-child(2) { animation-delay: 0.18s; }
-      .t-dot:nth-child(3) { animation-delay: 0.36s; }
-      @keyframes pulse {
-        0%,60%,100% { opacity: 0.3; transform: scale(1); }
-        30% { opacity: 1; transform: scale(1.3); background: var(--accent); }
-      }
+    /* STEPS */
+    .steps-wrap { max-width: 540px; margin: 0 auto; }
+    .step { display: flex; gap: 18px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .sn {
+      width: 32px; height: 32px; background: var(--g); color: #fff; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 13px; font-weight: 700;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .step h3 { font-family: var(--font-display); font-size: 15px; font-weight: 700; letter-spacing: -.3px; margin-bottom: 5px; }
+    .step p { font-family: var(--font-body); font-size: 13.5px; color: var(--muted); line-height: 1.65; }
 
-      .divider { text-align: center; font-size: 9.5px; color: var(--text3); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin: 2px 0 4px; }
+    /* CTA */
+    .cta { background: #080b08; padding: 100px 48px; text-align: center; }
+    .cta h2 {
+      font-family: var(--font-display);
+      font-size: clamp(30px, 4vw, 52px); font-weight: 800; color: #fff;
+      letter-spacing: -2px; line-height: 1.06; margin-bottom: 14px;
+    }
+    .cta h2 em { font-style: normal; color: #5dbe7a; }
+    .cta p { font-family: var(--font-body); font-size: 16px; font-weight: 400; color: #5a6370; margin-bottom: 36px; letter-spacing: -.01em; }
+    .dl-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-white {
+      background: #fff; color: #0a0a0a;
+      font-family: var(--font-body); font-size: 14px; font-weight: 700; letter-spacing: -.01em;
+      padding: 14px 30px; border-radius: 100px; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 9px; transition: all .15s;
+    }
+    .btn-white:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-white-outline {
+      background: transparent; color: #e0e4e8; border: 1px solid #2a2e2a;
+      font-family: var(--font-body); font-size: 14px; font-weight: 600; letter-spacing: -.01em;
+      padding: 14px 28px; border-radius: 100px; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 9px; transition: all .15s;
+    }
+    .btn-white-outline:hover { border-color: #444; background: #141414; }
+    .chip {
+      font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: .4px;
+      background: rgba(255,255,255,.14); padding: 2px 8px; border-radius: 100px;
+    }
+    .btn-white .chip { background: rgba(0,0,0,.09); color: #444; }
 
-      /* ── input bar ── */
-      #inputbar {
-        display: flex; align-items: flex-end; gap: 8px;
-        padding: 10px 12px 14px;
-        background: var(--bg); border-top: 1px solid var(--border);
-        flex-shrink: 0; -webkit-app-region: no-drag;
-        transition: background 0.2s;
-      }
+    /* DOCS INLINE SECTION */
+    .docs-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 40px; justify-content: center; }
+    .docs-tab {
+      padding: 8px 18px; border-radius: 100px; cursor: pointer;
+      font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--muted);
+      border: 1px solid var(--border); background: #fff; transition: all .14s;
+    }
+    .docs-tab:hover { border-color: #c8cdd4; color: var(--text); }
+    .docs-tab.active { background: var(--g); color: #fff; border-color: var(--g); font-weight: 600; }
 
-      #input-wrap {
-        flex: 1; background: var(--input-bg); border: 1.5px solid var(--border2);
-        border-radius: 16px; padding: 8px 14px; transition: border-color 0.2s, background 0.2s;
-      }
-      #input-wrap:focus-within { border-color: var(--accent); background: var(--bg); }
+    .docs-panel { display: none; max-width: 780px; margin: 0 auto; }
+    .docs-panel.active { display: block; }
 
-      #msg-input {
-        width: 100%; background: transparent; border: none; outline: none;
-        font-size: var(--font-size); font-family: 'Inter', -apple-system, sans-serif;
-        color: var(--text); resize: none; max-height: 80px; min-height: 18px;
-        line-height: 1.5; scrollbar-width: none;
-      }
-      #msg-input::-webkit-scrollbar { display: none; }
-      #msg-input::placeholder { color: var(--text3); }
+    .docs-panel-header { margin-bottom: 28px; }
+    .docs-panel-header h3 { font-family: var(--font-display); font-size: 26px; font-weight: 800; letter-spacing: -.8px; margin-bottom: 8px; }
+    .docs-panel-header p { font-family: var(--font-body); font-size: 15px; color: var(--muted); line-height: 1.7; max-width: 500px; }
 
-      #send-btn {
-        width: 34px; height: 34px; background: var(--accent);
-        border: none; border-radius: 50%; cursor: pointer;
-        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-        transition: all 0.15s; box-shadow: 0 2px 10px var(--accent-mid);
-      }
-      #send-btn:hover  { opacity: 0.85; transform: scale(1.07); }
-      #send-btn:active { transform: scale(0.94); }
-      #send-btn:disabled { background: var(--bg2); box-shadow: none; cursor: default; transform: none; }
+    .ditem {
+      display: flex; gap: 20px; padding: 18px 0;
+      border-bottom: 1px solid var(--border); align-items: flex-start;
+    }
+    .ditem:last-of-type { border-bottom: none; }
+    .ditem-left { flex-shrink: 0; width: 140px; }
+    .dkey {
+      display: inline-flex; align-items: center;
+      background: #f8f9fa; border: 1px solid #e5e7eb;
+      border-radius: 7px; padding: 5px 11px;
+      font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: #374151;
+      box-shadow: 0 1px 0 #e5e7eb; white-space: nowrap;
+    }
+    .ditem-right { flex: 1; }
+    .ditem-title { font-family: var(--font-display); font-size: 14.5px; font-weight: 700; letter-spacing: -.3px; color: var(--text); margin-bottom: 4px; }
+    .ditem-body { font-family: var(--font-body); font-size: 13.5px; color: var(--muted); line-height: 1.65; }
+    .ditem-body code { background: #f3f4f6; border: 1px solid #e5e7eb; padding: 1px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; color: #374151; }
 
-      #screenshot-btn {
-        width: 34px; height: 34px; background: var(--bg2);
-        border: 1.5px solid var(--border2); border-radius: 50%;
-        cursor: pointer; display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0; transition: all 0.15s; color: var(--text2);
-      }
-      #screenshot-btn:hover { border-color: var(--text3); }
-      #screenshot-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+    .docs-tip {
+      margin-top: 24px; background: var(--g-light); border: 1px solid #c6e8d5;
+      border-radius: 12px; padding: 14px 18px; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .docs-tip svg { color: var(--g); flex-shrink: 0; margin-top: 1px; }
+    .docs-tip p { font-family: var(--font-body); font-size: 13px; color: #1a5c2e; line-height: 1.65; }
 
-      #screenshot-preview {
-        display: none; align-items: center; gap: 8px; padding: 6px 10px;
-        background: var(--accent-light); border-radius: 10px;
-        font-size: 11px; color: var(--accent); font-weight: 600;
-        margin: 0 12px 4px; flex-shrink: 0;
-      }
-      #screenshot-preview.on { display: flex; }
-      #screenshot-preview button { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 13px; padding: 0; line-height: 1; margin-left: auto; }
-      #screenshot-thumb { width: 48px; height: 32px; object-fit: cover; border-radius: 5px; border: 1px solid var(--accent-mid); flex-shrink: 0; }
-    </style>
-  </head>
-  <body>
+    /* MOCKUP fonts */
+    .mh-logo { font-family: var(--font-display); font-size: 13px; font-weight: 800; }
+    .r, .s, .minput span { font-family: var(--font-body); }
+    .hint { font-family: var(--font-body); }
+    .kbd { font-family: var(--font-mono); }
 
-    <!-- Sessions panel -->
-    <div id="sessions-panel" class="slide-panel">
-      <div class="panel-header">
-        <span>Chats</span>
-        <button id="new-chat-btn">+ New chat</button>
-      </div>
-      <div id="sessions-list"></div>
+    /* FOOTER */
+    footer { padding: 26px 48px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    footer .logo { font-family: var(--font-display); }
+    footer p { font-family: var(--font-body); font-size: 13px; color: #b8c0cc; letter-spacing: -.01em; }
+
+    @media (max-width: 780px) {
+      footer { padding: 20px; flex-direction: column; gap: 8px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<header class="topbar">
+  <a href="#" class="logo"><span>.</span>pinn</a>
+  <button id="sb-toggle" aria-label="Menu" onclick="toggleSidebar()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</header>
+
+<!-- Mobile overlay -->
+<div id="sb-overlay" onclick="toggleSidebar()"></div>
+
+<!-- Left sidebar -->
+<nav id="sidebar">
+  <div class="sb-section">
+    <div class="sb-label">Navigation</div>
+    <a href="#hero" class="sb-link active" onclick="sbNav(this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </a>
+    <a href="#features" class="sb-link" onclick="sbNav(this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Features
+    </a>
+    <a href="#how" class="sb-link" onclick="sbNav(this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      How it works
+    </a>
+  </div>
+
+  <div class="sb-divider"></div>
+
+  <div class="sb-section">
+    <div class="sb-label">Resources</div>
+    <a href="#docs" class="sb-link" onclick="sbNav(this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Docs
+    </a>
+    <a href="#docs" class="sb-link" onclick="sbNav(this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Privacy
+    </a>
+  </div>
+
+  <div class="sb-bottom">
+    <div class="sb-divider"></div>
+    <a href="dist/Pinn-mac-arm64.zip" download class="sb-download" onclick="closeSidebar()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download free
+    </a>
+  </div>
+</nav>
+
+<!-- Main content wrapper -->
+<div id="main">
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="badge"><span class="badge-dot"></span> Free for macOS</div>
+
+  <h1>AI that stays<br><em>out of sight.</em></h1>
+
+  <p class="sub">Pinn runs silently in the background. Press a shortcut, get an answer, disappear. No dock. No trace.</p>
+
+  <div class="btns">
+    <a href="dist/Pinn-mac-arm64.zip" download class="btn-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download — it's free
+    </a>
+    <a href="#features" class="btn-ghost">See features</a>
+  </div>
+  <div class="hero-dl-row">
+    <a href="dist/Pinn-mac-arm64.zip" download class="hero-dl-link">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Apple Silicon
+    </a>
+    <span class="hero-dl-sep">·</span>
+    <a href="dist/Pinn-mac-x64.zip" download class="hero-dl-link">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Intel Mac
+    </a>
+    <span class="hero-dl-sep">·</span>
+    <a href="dist/Pinn-Setup-Windows-x64.exe" download class="hero-dl-link">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/></svg>
+      Windows x64
+    </a>
+  </div>
+
+  <div class="mockup">
+    <div class="mh">
+      <div class="mh-logo"><span>.</span>pinn</div>
+      <div class="mh-close"></div>
     </div>
-
-    <!-- Settings panel -->
-    <div id="settings-panel" class="slide-panel">
-      <div class="panel-header">
-        <span>Settings</span>
-        <button class="panel-close" id="close-settings">✕</button>
-      </div>
-      <div id="settings-body">
-
-        <div class="setting-section">
-          <h4>Theme</h4>
-          <div class="theme-grid">
-            <div class="theme-swatch" data-theme="white">
-              <div class="swatch-circle" style="background:#fff; border-color:#ddd;"></div>
-              <span class="swatch-label">White</span>
-            </div>
-            <div class="theme-swatch" data-theme="dark">
-              <div class="swatch-circle" style="background:#1c1c1e; border-color:#444;"></div>
-              <span class="swatch-label">Dark</span>
-            </div>
-            <div class="theme-swatch" data-theme="black">
-              <div class="swatch-circle" style="background:#000; border-color:#333;"></div>
-              <span class="swatch-label">Black</span>
-            </div>
-            <div class="theme-swatch" data-theme="blue">
-              <div class="swatch-circle" style="background:#2563eb; border-color:#1d4ed8;"></div>
-              <span class="swatch-label">Blue</span>
-            </div>
-            <div class="theme-swatch" data-theme="pink">
-              <div class="swatch-circle" style="background:#db2777; border-color:#be185d;"></div>
-              <span class="swatch-label">Pink</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="setting-section">
-          <h4>Font Size</h4>
-          <div class="font-btns">
-            <button class="font-btn" data-size="11px" style="font-size:11px;">Small</button>
-            <button class="font-btn" data-size="13px" style="font-size:13px;">Medium</button>
-            <button class="font-btn" data-size="15px" style="font-size:15px;">Large</button>
-          </div>
-        </div>
-
-        <div class="setting-section">
-          <h4>Hotkey</h4>
-          <input id="hotkey-input" type="text" readonly placeholder="Click to record new shortcut" />
-          <p class="hotkey-hint">Click the box, then press your shortcut keys</p>
-        </div>
-
-        <button id="save-settings-btn">Save Settings</button>
+    <div class="msgs">
+      <div class="r">Hey! I'm Pinn. What's on your mind?</div>
+      <div class="s">Explain async/await simply</div>
+      <div class="r">Mark a function async, use await inside to pause until a promise resolves. Clean, readable, no callback hell.</div>
+    </div>
+    <div class="minput">
+      <span>Ask anything…</span>
+      <div class="msend">
+        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       </div>
     </div>
+  </div>
 
-    <div id="header">
-      <div id="header-left">
-        <button class="icon-btn" id="sessions-btn" title="Chats">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
-          </svg>
-        </button>
-        <div id="header-name"><span class="dot">.</span><span class="text">pinn</span></div>
+  <p class="hint">Press <span class="kbd">⌘ Shift P</span> anywhere to open Pinn</p>
+</section>
+
+<!-- FEATURES -->
+<section class="section alt" id="features">
+  <p class="label">Features</p>
+  <h2 class="title">Built different</h2>
+  <div class="grid">
+    <div class="card">
+      <div class="card-ic">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
       </div>
-      <div id="header-right">
-        <button class="icon-btn" id="settings-btn" title="Settings">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-          </svg>
-        </button>
-        <button id="close-btn"></button>
-      </div>
+      <h3>Invisible by design</h3>
+      <p>No dock icon, no app switcher, no Mission Control. It runs without a trace.</p>
     </div>
-
-    <div id="messages">
-      <div class="divider">Today</div>
-      <div class="msg-row recv">
-        <div class="bubble">Hey! I'm Pinn 👋 What's on your mind?</div>
-        <div class="msg-time">just now</div>
+    <div class="card">
+      <div class="card-ic">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
       </div>
-      <div id="typing">
-        <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
+      <h3>Screen share safe</h3>
+      <p>Pinn is invisible to Zoom, Teams, and Google Meet. Nobody sees it.</p>
+    </div>
+    <div class="card">
+      <div class="card-ic">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
       </div>
+      <h3>Persistent memory</h3>
+      <p>Remembers your past conversations. Picks up right where you left off.</p>
     </div>
-
-    <div id="screenshot-preview">
-      <img id="screenshot-thumb" src="" alt=""/>
-      <span>Screenshot ready</span>
-      <button id="clear-screenshot">✕</button>
-    </div>
-    <div id="inputbar">
-      <button id="screenshot-btn" title="Attach screenshot">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-          <circle cx="12" cy="13" r="4"/>
-        </svg>
-      </button>
-      <div id="input-wrap">
-        <textarea id="msg-input" placeholder="Ask anything…" rows="1"></textarea>
+    <div class="card">
+      <div class="card-ic">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
       </div>
-      <button id="send-btn">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-        </svg>
-      </button>
+      <h3>Screenshot context</h3>
+      <p>Capture any part of your screen and ask Pinn about it instantly.</p>
     </div>
+    <div class="card">
+      <div class="card-ic">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <h3>Instant shortcut</h3>
+      <p>One keypress from anywhere. Appears in under 100ms, dismisses just as fast.</p>
+    </div>
+    <div class="card">
+      <div class="card-ic">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </div>
+      <h3>Customizable</h3>
+      <p>Change theme, font size, and hotkey from the built-in settings panel.</p>
+    </div>
+  </div>
+</section>
 
-    <script>
-      const { ipcRenderer } = require('electron')
-      const https = require('https')
-      const fs    = require('fs')
-      const path  = require('path')
-      const os    = require('os')
+<!-- HOW -->
+<section class="section" id="how">
+  <p class="label">Setup</p>
+  <h2 class="title">Ready in 30 seconds</h2>
+  <div class="steps-wrap">
+    <div class="step">
+      <div class="sn">1</div>
+      <div><h3>Download Pinn</h3><p>One file. No installer. Open it and it's already running.</p></div>
+    </div>
+    <div class="step">
+      <div class="sn">2</div>
+      <div><h3>It hides itself</h3><p>No dock icon. No trace anywhere. Just a silent process in the background.</p></div>
+    </div>
+    <div class="step">
+      <div class="sn">3</div>
+      <div><h3>Press Cmd+Shift+P</h3><p>Pinn appears. Ask anything. Dismiss it. Nobody knew it was there.</p></div>
+    </div>
+  </div>
+</section>
 
-      const isMac = process.platform === 'darwin'
-      const isWin = process.platform === 'win32'
+</div><!-- /main -->
 
-      // On Windows: apply semi-transparent body so acrylic blur shows through
-      if (isWin) {
-        document.body.style.background = 'rgba(255,255,255,0.82)'
-        document.documentElement.style.setProperty('--bg', 'rgba(255,255,255,0.82)')
-        document.documentElement.style.setProperty('--header-bg', 'rgba(255,255,255,0.82)')
-        document.documentElement.style.setProperty('--panel-bg', 'rgba(255,255,255,0.82)')
-      }
+<!-- DOCS -->
+<section class="section alt" id="docs">
+  <p class="label">Documentation</p>
+  <h2 class="title">How every feature works</h2>
 
-      document.getElementById('close-btn').addEventListener('click', () => ipcRenderer.send('close-window'))
-      ipcRenderer.on('screenshot-instructions', () => {
-        // macOS only — Windows uses the selector window instead
-        addMsg('Press Cmd+Shift+4, select your area, then Pinn will grab it automatically.', 'recv')
-      })
+  <div class="docs-tabs">
+    <button class="docs-tab active" data-panel="shortcut">Shortcut</button>
+    <button class="docs-tab" data-panel="chat">Chat</button>
+    <button class="docs-tab" data-panel="screenshot">Screenshot</button>
+    <button class="docs-tab" data-panel="sessions">Sessions</button>
+    <button class="docs-tab" data-panel="settings">Settings</button>
+    <button class="docs-tab" data-panel="privacy">Privacy</button>
+  </div>
 
-      ipcRenderer.on('focus-input', () => {
-        const el = document.getElementById('msg-input')
-        if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length) }
-      })
-      document.addEventListener('click', e => {
-        const el = document.getElementById('msg-input')
-        if (el && !e.target.closest('button') && !e.target.closest('.slide-panel') && !e.target.closest('input')) el.focus()
-      })
+  <div class="docs-panel active" id="dp-shortcut">
+    <div class="docs-panel-header">
+      <h3>Shortcut</h3>
+      <p>Pinn lives in your keyboard. One combo summons it from anywhere — even over fullscreen apps.</p>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">⌘ Shift P</span></div>
+      <div class="ditem-right"><div class="ditem-title">Show / Hide</div><div class="ditem-body">Press from any app to toggle Pinn. Works over fullscreen, video calls, games — anything.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Ctrl Shift P</span></div>
+      <div class="ditem-right"><div class="ditem-title">Windows shortcut</div><div class="ditem-body">Same behaviour on Windows. Ctrl replaces Cmd automatically.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Esc</span></div>
+      <div class="ditem-right"><div class="ditem-title">Dismiss</div><div class="ditem-body">Close Pinn immediately without touching the mouse.</div></div>
+    </div>
+    <div class="docs-tip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>Change the shortcut to any combination inside Settings → Hotkey. Registers system-wide immediately.</p></div>
+  </div>
 
-      const { GROQ_API_KEY } = require('./config.js')
-      const API_KEY      = GROQ_API_KEY
-      const MODEL        = 'openai/gpt-oss-20b'
-      const VISION_MODEL = 'qwen/qwen3.8-27b'
-      const SESSIONS_DIR = path.join(os.homedir(), '.pinn-sessions')
-      const SETTINGS_FILE = path.join(os.homedir(), '.pinn-settings.json')
-      const MAX_SAVED    = 40
+  <div class="docs-panel" id="dp-chat">
+    <div class="docs-panel-header">
+      <h3>Chat</h3>
+      <p>A focused chat interface powered by a fast AI model. No clutter. Just your question and a sharp answer.</p>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Enter</span></div>
+      <div class="ditem-right"><div class="ditem-title">Send message</div><div class="ditem-body">Send your message and get a response. The AI streams the reply as it's generated.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Shift Enter</span></div>
+      <div class="ditem-right"><div class="ditem-title">New line</div><div class="ditem-body">Add a line break without sending — useful for multi-line questions or code snippets.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Memory</span></div>
+      <div class="ditem-right"><div class="ditem-title">Persistent context</div><div class="ditem-body">Pinn retains a memory file at <code>~/.pinn-memory.json</code> that carries context across sessions.</div></div>
+    </div>
+    <div class="docs-tip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>The AI responds in plain text — no markdown, no asterisks. Clean, readable answers every time.</p></div>
+  </div>
 
-      const SYSTEM_PROMPT = `You are Pinn, a highly intelligent AI assistant inside a hidden desktop app. You reason carefully before answering and always give correct, well-thought-out responses.
+  <div class="docs-panel" id="dp-screenshot">
+    <div class="docs-panel-header">
+      <h3>Screenshot</h3>
+      <p>Capture any part of your screen and send it straight to the AI. Ask about a bug, a design, an error — anything visual.</p>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Camera icon</span></div>
+      <div class="ditem-right"><div class="ditem-title">Start capture (macOS)</div><div class="ditem-body">Pinn hides itself. Use <code>⌘ Shift 4</code> to drag-select any area. Pinn picks up the file from your Desktop automatically.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Camera icon</span></div>
+      <div class="ditem-right"><div class="ditem-title">Start capture (Windows)</div><div class="ditem-body">Pinn hides, takes a silent snapshot, then shows a dark overlay. Drag to select your area — no permission needed.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Auto attach</span></div>
+      <div class="ditem-right"><div class="ditem-title">Thumbnail preview</div><div class="ditem-body">A thumbnail appears above the input bar. Type your question and hit Enter — the screenshot is sent automatically.</div></div>
+    </div>
+    <div class="docs-tip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>Images are compressed to 1280px wide before sending to stay within API limits.</p></div>
+  </div>
 
-FORMATTING — never break these:
-- NEVER use asterisks (*) for anything. Zero asterisks ever.
-- No markdown: no **, no ##, no _, no backticks for formatting.
-- Plain text only. Use "- item" for lists if needed.
+  <div class="docs-panel" id="dp-sessions">
+    <div class="docs-panel-header">
+      <h3>Sessions</h3>
+      <p>Every conversation is saved automatically. Switch between them, start fresh, or pick up where you left off.</p>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">New chat</span></div>
+      <div class="ditem-right"><div class="ditem-title">Start fresh</div><div class="ditem-body">Opens a blank conversation. The previous session is saved automatically before switching.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">History panel</span></div>
+      <div class="ditem-right"><div class="ditem-title">Browse past chats</div><div class="ditem-body">Click the sessions icon in the header to open the history panel. Tap any entry to resume that conversation.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Storage</span></div>
+      <div class="ditem-right"><div class="ditem-title">Where sessions live</div><div class="ditem-body">Sessions are saved as JSON files in <code>~/.pinn-sessions/</code>. You can read, back up, or delete them directly.</div></div>
+    </div>
+    <div class="docs-tip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>Sessions never leave your device. Nothing is synced to a server. Your conversation history is yours entirely.</p></div>
+  </div>
 
-STYLE:
-- Think through the problem carefully before answering — accuracy matters more than speed.
-- Give the correct answer first, then explain why if helpful.
-- Match length to the question: short for simple questions, detailed for complex ones.
-- Be confident and precise. Never guess — if unsure, say so clearly.`
+  <div class="docs-panel" id="dp-settings">
+    <div class="docs-panel-header">
+      <h3>Settings</h3>
+      <p>Personalise Pinn to match your style and workflow. Open Settings from the gear icon in the header.</p>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Theme</span></div>
+      <div class="ditem-right"><div class="ditem-title">5 colour themes</div><div class="ditem-body">Choose from White, Dark, Black, Blue, or Pink. Switches instantly without restarting.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Font size</span></div>
+      <div class="ditem-right"><div class="ditem-title">Small · Medium · Large</div><div class="ditem-body">Three sizes to keep the interface comfortable at any display scaling.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Hotkey</span></div>
+      <div class="ditem-right"><div class="ditem-title">Custom shortcut</div><div class="ditem-body">Click the hotkey field and press your combo. Registers system-wide as soon as you save.</div></div>
+    </div>
+    <div class="docs-tip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>All settings are stored in <code>~/.pinn-settings.json</code> and persist across restarts automatically.</p></div>
+  </div>
 
-      // ── Settings ────────────────────────────────────────────────
-      function loadSettings() {
-        try { return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8')) }
-        catch { return { theme: 'white', fontSize: '13px', hotkey: 'CommandOrControl+Shift+P' } }
-      }
-      function saveSettingsFile(s) {
-        try { fs.writeFileSync(SETTINGS_FILE, JSON.stringify(s, null, 2)) } catch {}
-      }
+  <div class="docs-panel" id="dp-privacy">
+    <div class="docs-panel-header">
+      <h3>Privacy</h3>
+      <p>Pinn is designed from the ground up to leave no trace. What you type stays on your machine.</p>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">OS invisible</span></div>
+      <div class="ditem-right"><div class="ditem-title">No dock, no switcher</div><div class="ditem-body">macOS: no Dock icon, no Mission Control, no Cmd+Tab. Windows: no taskbar button, no Alt+Tab entry.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Screen share</span></div>
+      <div class="ditem-right"><div class="ditem-title">Invisible to recording</div><div class="ditem-body">Content protection is enabled at the OS level — Pinn's window does not appear in Zoom, Teams, Meet, OBS, or any screen recorder.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Local only</span></div>
+      <div class="ditem-right"><div class="ditem-title">Nothing leaves your device</div><div class="ditem-body">Chat history, memory, and settings are stored in plain JSON files on your machine. No account, no cloud sync, no telemetry.</div></div>
+    </div>
+    <div class="docs-tip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>The only outbound connection Pinn makes is to the AI API when you send a message.</p></div>
+  </div>
 
-      let currentSettings = loadSettings()
+</section>
 
-      function applySettings(s) {
-        // Theme
-        document.body.className = s.theme === 'white' ? '' : `theme-${s.theme}`
-        // Font size
-        document.documentElement.style.setProperty('--font-size', s.fontSize)
-        // Update active states
-        document.querySelectorAll('.theme-swatch').forEach(el => {
-          el.classList.toggle('active', el.dataset.theme === s.theme)
-        })
-        document.querySelectorAll('.font-btn').forEach(el => {
-          el.classList.toggle('active', el.dataset.size === s.fontSize)
-        })
-        document.getElementById('hotkey-input').value = s.hotkey
-      }
+<footer>
+  <a href="#" class="logo"><span>.</span>pinn</a>
+  <p>macOS · Windows · Always hidden · Always ready</p>
+</footer>
 
-      applySettings(currentSettings)
+<script>
+  /* ── Sidebar nav ── */
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open')
+    document.getElementById('sb-overlay').classList.toggle('open')
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open')
+    document.getElementById('sb-overlay').classList.remove('open')
+  }
+  function sbNav(el) {
+    document.querySelectorAll('#sidebar .sb-link').forEach(l => l.classList.remove('active'))
+    el.classList.add('active')
+    closeSidebar()
+  }
 
-      // Settings panel
-      document.getElementById('settings-btn').addEventListener('click', () => {
-        applySettings(currentSettings)
-        document.getElementById('settings-panel').classList.add('open')
-      })
-      document.getElementById('close-settings').addEventListener('click', () => {
-        document.getElementById('settings-panel').classList.remove('open')
-      })
+  /* Highlight active sidebar link on scroll */
+  const sections = ['hero','features','how','docs']
+  window.addEventListener('scroll', () => {
+    let current = 'hero'
+    sections.forEach(id => {
+      const el = document.getElementById(id)
+      if (el && window.scrollY >= el.offsetTop - 120) current = id
+    })
+    document.querySelectorAll('#sidebar a.sb-link').forEach(l => {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + current)
+    })
+  }, { passive: true })
 
-      document.querySelectorAll('.theme-swatch').forEach(el => {
-        el.addEventListener('click', () => {
-          currentSettings.theme = el.dataset.theme
-          applySettings(currentSettings)
-        })
-      })
+  /* ── Docs tabs ── */
+  document.querySelectorAll('.docs-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.docs-tab').forEach(t => t.classList.remove('active'))
+      document.querySelectorAll('.docs-panel').forEach(p => p.classList.remove('active'))
+      tab.classList.add('active')
+      document.getElementById('dp-' + tab.dataset.panel).classList.add('active')
+    })
+  })
 
-      document.querySelectorAll('.font-btn').forEach(el => {
-        el.addEventListener('click', () => {
-          currentSettings.fontSize = el.dataset.size
-          applySettings(currentSettings)
-        })
-      })
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeSidebar()
+  })
+</script>
 
-      // Hotkey recorder
-      const hotkeyInput = document.getElementById('hotkey-input')
-      let recordingHotkey = false
-      hotkeyInput.addEventListener('click', () => {
-        hotkeyInput.value = 'Press your shortcut…'
-        hotkeyInput.classList.add('recording')
-        recordingHotkey = true
-      })
-      hotkeyInput.addEventListener('keydown', e => {
-        if (!recordingHotkey) return
-        e.preventDefault()
-        const parts = []
-        if (e.metaKey || e.ctrlKey) parts.push('CommandOrControl')
-        if (e.shiftKey) parts.push('Shift')
-        if (e.altKey) parts.push('Alt')
-        const key = e.key.toUpperCase()
-        if (!['CONTROL','SHIFT','ALT','META','COMMAND'].includes(key) && parts.length > 0) {
-          parts.push(key)
-          currentSettings.hotkey = parts.join('+')
-          hotkeyInput.value = currentSettings.hotkey
-          hotkeyInput.classList.remove('recording')
-          recordingHotkey = false
-        }
-      })
-
-      document.getElementById('save-settings-btn').addEventListener('click', () => {
-        saveSettingsFile(currentSettings)
-        ipcRenderer.send('update-hotkey', currentSettings.hotkey)
-        document.getElementById('settings-panel').classList.remove('open')
-      })
-
-      // ── Sessions ────────────────────────────────────────────────
-      try { fs.mkdirSync(SESSIONS_DIR, { recursive: true }) } catch {}
-      let currentSessionId = null
-
-      function listSessions() {
-        try {
-          return fs.readdirSync(SESSIONS_DIR).filter(f => f.endsWith('.json'))
-            .map(f => { try { return JSON.parse(fs.readFileSync(path.join(SESSIONS_DIR, f), 'utf8')) } catch { return null } })
-            .filter(Boolean).sort((a, b) => b.created - a.created)
-        } catch { return [] }
-      }
-
-      function saveSession(id, messages) {
-        if (!id || messages.length === 0) return
-        const title = messages.find(m => m.role === 'user')?.content
-        const safeTitle = Array.isArray(title) ? (title.find(p => p.type === 'text')?.text || 'Screenshot') : (title || 'New chat')
-        const clean = messages.map(m => {
-          if (Array.isArray(m.content)) { const t = m.content.find(p => p.type === 'text'); return { role: m.role, content: t ? t.text : '(screenshot)' } }
-          return m
-        }).slice(-MAX_SAVED)
-        try { fs.writeFileSync(path.join(SESSIONS_DIR, id + '.json'), JSON.stringify({ id, created: parseInt(id), title: safeTitle.slice(0, 60), messages: clean }, null, 2)) } catch {}
-      }
-
-      function loadSession(id) {
-        try { return JSON.parse(fs.readFileSync(path.join(SESSIONS_DIR, id + '.json'), 'utf8')).messages || [] }
-        catch { return [] }
-      }
-
-      function renderSessionsList() {
-        const list = document.getElementById('sessions-list')
-        const sessions = listSessions()
-        if (!sessions.length) { list.innerHTML = '<div class="sessions-empty">No past chats yet</div>'; return }
-        list.innerHTML = sessions.map(s => {
-          const d = new Date(s.created)
-          return `<div class="session-item${s.id === currentSessionId ? ' active' : ''}" data-id="${s.id}">
-            <div class="session-title">${s.title.replace(/</g,'&lt;')}</div>
-            <div class="session-date">${d.toLocaleDateString(undefined, { month:'short', day:'numeric' })}</div>
-          </div>`
-        }).join('')
-        list.querySelectorAll('.session-item').forEach(el => {
-          el.addEventListener('click', () => {
-            if (el.dataset.id === currentSessionId) { closeSessionsPanel(); return }
-            switchToSession(el.dataset.id)
-          })
-        })
-      }
-
-      function switchToSession(id) {
-        if (currentSessionId && history.length > 1) saveSession(currentSessionId, history.slice(1))
-        currentSessionId = id
-        const msgs = loadSession(id)
-        history.length = 1
-        history.push(...msgs)
-        renderMessages()
-        closeSessionsPanel()
-      }
-
-      function startNewChat() {
-        if (currentSessionId && history.length > 1) saveSession(currentSessionId, history.slice(1))
-        currentSessionId = Date.now().toString()
-        history.length = 1
-        renderMessages()
-        closeSessionsPanel()
-        setTimeout(() => document.getElementById('msg-input').focus(), 100)
-      }
-
-      const sessionsPanel = document.getElementById('sessions-panel')
-      document.getElementById('sessions-btn').addEventListener('click', () => { renderSessionsList(); sessionsPanel.classList.add('open') })
-      document.getElementById('new-chat-btn').addEventListener('click', startNewChat)
-      function closeSessionsPanel() { sessionsPanel.classList.remove('open') }
-
-      // ── Screenshot ─────────────────────────────────────────────
-      let pendingScreenshot = null
-      const screenshotBtn     = document.getElementById('screenshot-btn')
-      const screenshotPreview = document.getElementById('screenshot-preview')
-
-      screenshotBtn.addEventListener('click', async () => {
-        screenshotBtn.disabled = true
-
-        try {
-          const dataUrl = await ipcRenderer.invoke('take-screenshot')
-          if (dataUrl) {
-            // Resize image to max 1280px wide before storing — keeps it under API limits
-            const resized = await resizeImage(dataUrl, 1280)
-            pendingScreenshot = resized
-            document.getElementById('screenshot-thumb').src = resized
-            screenshotBtn.classList.add('active')
-            screenshotPreview.classList.add('on')
-          }
-        } catch (e) { addMsg('Could not capture screenshot — ' + e.message, 'recv') }
-        screenshotBtn.disabled = false
-      })
-
-      document.getElementById('clear-screenshot').addEventListener('click', () => {
-        pendingScreenshot = null
-        screenshotBtn.classList.remove('active')
-        screenshotPreview.classList.remove('on')
-      })
-
-      // ── History & Render ───────────────────────────────────────
-      const messagesEl = document.getElementById('messages')
-      const inputEl    = document.getElementById('msg-input')
-      const sendBtn    = document.getElementById('send-btn')
-      const typing     = document.getElementById('typing')
-
-      const history = [{ role: 'system', content: SYSTEM_PROMPT }]
-
-      const allSessions = listSessions()
-      if (allSessions.length > 0) {
-        currentSessionId = allSessions[0].id
-        history.push(...loadSession(currentSessionId))
-      } else {
-        currentSessionId = Date.now().toString()
-      }
-
-      function renderMessages() {
-        messagesEl.querySelectorAll('.msg-row').forEach(r => r.remove())
-        history.slice(1).forEach(m => {
-          if (m.role === 'user' || m.role === 'assistant') addMsg(m.content, m.role === 'user' ? 'sent' : 'recv', true)
-        })
-        messagesEl.scrollTop = messagesEl.scrollHeight
-      }
-      renderMessages()
-
-      function resizeImage(dataUrl, maxWidth) {
-        return new Promise(resolve => {
-          const img = new Image()
-          img.onload = () => {
-            const scale = Math.min(1, maxWidth / img.width)
-            const w = Math.round(img.width * scale)
-            const h = Math.round(img.height * scale)
-            const canvas = document.createElement('canvas')
-            canvas.width = w; canvas.height = h
-            canvas.getContext('2d').drawImage(img, 0, 0, w, h)
-            resolve(canvas.toDataURL('image/jpeg', 0.75))
-          }
-          img.src = dataUrl
-        })
-      }
-
-      function timeNow() {
-        const d = new Date(); let h = d.getHours(), m = d.getMinutes()
-        const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12
-        return `${h}:${String(m).padStart(2,'0')} ${ap}`
-      }
-
-      function addMsg(text, side, silent = false) {
-        let safeText = Array.isArray(text) ? (text.find(p => p.type === 'text')?.text || '(screenshot)') : String(text || '')
-        const row = document.createElement('div')
-        row.className = `msg-row ${side}`
-        row.innerHTML = `<div class="bubble">${safeText.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div><div class="msg-time">${timeNow()}</div>`
-        messagesEl.insertBefore(row, typing)
-        if (!silent) messagesEl.scrollTop = messagesEl.scrollHeight
-      }
-
-      async function askAI(userMsg, screenshot = null) {
-        const userContent = screenshot
-          ? [{ type: 'image_url', image_url: { url: screenshot } }, { type: 'text', text: userMsg || 'What do you see on my screen?' }]
-          : userMsg
-        history.push({ role: 'user', content: userContent })
-        typing.classList.add('on')
-        messagesEl.scrollTop = messagesEl.scrollHeight
-
-        const useModel = screenshot ? VISION_MODEL : MODEL
-        const cleanHistory = history.map((m, i) => {
-          if (Array.isArray(m.content) && i < history.length - 1) {
-            const t = m.content.find(p => p.type === 'text')
-            return { role: m.role, content: t ? t.text : '(screenshot)' }
-          }
-          return m
-        })
-        // Keep system prompt + last 10 messages to avoid context overflow
-        const trimmed = [cleanHistory[0], ...cleanHistory.slice(1).slice(-10)]
-        const body = JSON.stringify({ model: useModel, messages: trimmed, max_tokens: 1024 })
-
-        try {
-          const reply = await new Promise((resolve, reject) => {
-            const req = https.request({
-              hostname: 'api.groq.com', path: '/openai/v1/chat/completions', method: 'POST',
-              headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
-            }, res => {
-              let data = ''
-              res.on('data', d => data += d)
-              res.on('end', () => {
-                try {
-                  const json = JSON.parse(data)
-                  if (json.error) return reject(new Error(json.error.message))
-                  const raw = json.choices[0].message.content.trim()
-                  resolve(raw.replace(/\*+/g, '').replace(/_{2,}/g, '').replace(/#{1,6}\s/g, ''))
-                } catch { reject(new Error('Bad response')) }
-              })
-            })
-            req.on('error', reject); req.write(body); req.end()
-          })
-          history.push({ role: 'assistant', content: reply })
-          saveSession(currentSessionId, history.slice(1))
-          typing.classList.remove('on')
-          addMsg(reply, 'recv')
-        } catch (err) {
-          typing.classList.remove('on')
-          addMsg('Something went wrong — ' + err.message, 'recv')
-        }
-      }
-
-      function send() {
-        const msg = inputEl.value.trim()
-        if ((!msg && !pendingScreenshot) || sendBtn.disabled) return
-        const screenshot = pendingScreenshot
-        pendingScreenshot = null
-        screenshotBtn.classList.remove('active')
-        screenshotPreview.classList.remove('on')
-        inputEl.value = ''; inputEl.style.height = 'auto'
-        sendBtn.disabled = true
-        addMsg((msg || '(screenshot)') + (screenshot ? ' 📸' : ''), 'sent')
-        askAI(msg, screenshot).finally(() => { sendBtn.disabled = false })
-      }
-
-      sendBtn.addEventListener('click', send)
-      inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } })
-      inputEl.addEventListener('input', () => { inputEl.style.height = 'auto'; inputEl.style.height = Math.min(inputEl.scrollHeight, 80) + 'px' })
-
-      messagesEl.scrollTop = messagesEl.scrollHeight
-    </script>
-  </body>
+</body>
 </html>
