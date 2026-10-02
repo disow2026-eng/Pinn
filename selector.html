@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
+    body { width: 100vw; height: 100vh; overflow: hidden; background: transparent; }
+
+    #bg {
+      position: fixed; inset: 0;
+      background-size: 100% 100%;
+      background-position: 0 0;
+      background-repeat: no-repeat;
+    }
+
+    #overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+    }
+
+    #selection {
+      position: fixed;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.45);
+      display: none;
+      pointer-events: none;
+    }
+
+    #hint {
+      position: fixed;
+      top: 20px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      font-family: -apple-system, sans-serif;
+      font-size: 13px;
+      padding: 8px 18px;
+      border-radius: 100px;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="bg"></div>
+  <div id="overlay"></div>
+  <div id="selection"></div>
+  <div id="hint">Drag to select — release to capture · Esc to cancel</div>
+
+  <script>
+    const { ipcRenderer } = require('electron')
+
+    // Receive the screenshot and display as background
+    ipcRenderer.on('screenshot', (_, dataUrl) => {
+      document.getElementById('bg').style.backgroundImage = `url(${dataUrl})`
+    })
+
+    const sel = document.getElementById('selection')
+    let startX, startY, dragging = false
+
+    document.addEventListener('mousedown', e => {
+      startX = e.clientX; startY = e.clientY
+      dragging = true
+      sel.style.display = 'block'
+      sel.style.left = startX + 'px'
+      sel.style.top  = startY + 'px'
+      sel.style.width  = '0px'
+      sel.style.height = '0px'
+    })
+
+    document.addEventListener('mousemove', e => {
+      if (!dragging) return
+      const x = Math.min(e.clientX, startX)
+      const y = Math.min(e.clientY, startY)
+      const w = Math.abs(e.clientX - startX)
+      const h = Math.abs(e.clientY - startY)
+      sel.style.left   = x + 'px'
+      sel.style.top    = y + 'px'
+      sel.style.width  = w + 'px'
+      sel.style.height = h + 'px'
+    })
+
+    document.addEventListener('mouseup', e => {
+      if (!dragging) return
+      dragging = false
+      const x = Math.min(e.clientX, startX)
+      const y = Math.min(e.clientY, startY)
+      const w = Math.abs(e.clientX - startX)
+      const h = Math.abs(e.clientY - startY)
+      if (w < 10 || h < 10) { ipcRenderer.send('selection-cancel'); return }
+      ipcRenderer.send('selection-done', { x, y, w, h })
+    })
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') ipcRenderer.send('selection-cancel')
+    })
+  </script>
+</body>
+</html>

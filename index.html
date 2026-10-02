@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Pinn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --accent: #1a7a3c;
+        --accent-light: #e8f5ee;
+        --accent-mid: rgba(26,122,60,0.2);
+        --bg: #fff;
+        --bg2: #f5f5f5;
+        --bg3: #fafafa;
+        --border: #f0f0f0;
+        --border2: #ececec;
+        --text: #111;
+        --text2: #666;
+        --text3: #bbb;
+        --bubble-sent-bg: var(--accent);
+        --bubble-sent-color: #fff;
+        --bubble-recv-bg: var(--bg2);
+        --bubble-recv-color: var(--text);
+        --font-size: 13px;
+        --panel-bg: #fff;
+        --header-bg: #fff;
+        --input-bg: var(--bg2);
+      }
+
+      /* ── DARK theme ── */
+      body.theme-dark {
+        --bg: #1c1c1e; --bg2: #2c2c2e; --bg3: #242426;
+        --border: #3a3a3c; --border2: #3a3a3c;
+        --text: #f0f0f0; --text2: #aaa; --text3: #666;
+        --bubble-recv-bg: #2c2c2e; --bubble-recv-color: #f0f0f0;
+        --panel-bg: #1c1c1e; --header-bg: #1c1c1e; --input-bg: #2c2c2e;
+        border-color: #3a3a3c;
+      }
+      /* ── BLACK theme ── */
+      body.theme-black {
+        --bg: #000; --bg2: #111; --bg3: #0a0a0a;
+        --border: #222; --border2: #222;
+        --text: #fff; --text2: #999; --text3: #555;
+        --bubble-recv-bg: #111; --bubble-recv-color: #fff;
+        --panel-bg: #000; --header-bg: #000; --input-bg: #111;
+        border-color: #333;
+      }
+      /* ── BLUE theme ── */
+      body.theme-blue {
+        --accent: #2563eb; --accent-light: #eff6ff; --accent-mid: rgba(37,99,235,0.2);
+        --bubble-sent-bg: #2563eb;
+      }
+      /* ── PINK theme ── */
+      body.theme-pink {
+        --accent: #db2777; --accent-light: #fdf2f8; --accent-mid: rgba(219,39,119,0.2);
+        --bubble-sent-bg: #db2777;
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        font-family: 'Inter', -apple-system, sans-serif;
+        background: var(--bg);
+        height: 100vh;
+        border-radius: 20px;
+        overflow: hidden;
+        user-select: none;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--border);
+        position: relative;
+        transition: background 0.2s, color 0.2s;
+        font-size: var(--font-size);
+      }
+
+      /* ── header ── */
+      #header {
+        -webkit-app-region: drag;
+        padding: 14px 16px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+        background: var(--header-bg);
+        border-bottom: 1px solid var(--border);
+        transition: background 0.2s;
+      }
+      #header-left { display: flex; align-items: center; gap: 8px; -webkit-app-region: no-drag; }
+      #header-name { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; -webkit-app-region: drag; }
+      #header-name .dot  { color: var(--accent); }
+      #header-name .text { color: var(--text); }
+      #header-right { display: flex; align-items: center; gap: 6px; -webkit-app-region: no-drag; }
+
+      .icon-btn {
+        -webkit-app-region: no-drag;
+        width: 26px; height: 26px;
+        background: transparent; border: none; border-radius: 8px;
+        cursor: pointer; color: var(--text3);
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.15s; flex-shrink: 0;
+      }
+      .icon-btn:hover { background: var(--bg2); color: var(--text2); }
+
+      #close-btn {
+        -webkit-app-region: no-drag;
+        width: 12px; height: 12px; background: #e0e0e0;
+        border: none; border-radius: 50%; cursor: pointer; color: transparent;
+        transition: all 0.15s; margin-left: 2px;
+      }
+      #close-btn:hover { background: #ff5f57; }
+
+      /* ── slide panels (sessions + settings) ── */
+      .slide-panel {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background: var(--panel-bg);
+        z-index: 50; display: flex; flex-direction: column;
+        border-radius: 20px;
+        transition: transform 0.22s cubic-bezier(0.4,0,0.2,1);
+      }
+      #sessions-panel { transform: translateX(-100%); }
+      #sessions-panel.open { transform: translateX(0); }
+      #settings-panel { transform: translateX(100%); }
+      #settings-panel.open { transform: translateX(0); }
+
+      .panel-header {
+        padding: 14px 16px 12px;
+        display: flex; align-items: center; justify-content: space-between;
+        border-bottom: 1px solid var(--border); flex-shrink: 0;
+      }
+      .panel-header span { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+      .panel-close {
+        background: none; border: none; cursor: pointer;
+        color: var(--text3); font-size: 16px; padding: 2px 6px;
+        border-radius: 6px; transition: all 0.15s; font-family: 'Inter', sans-serif;
+      }
+      .panel-close:hover { background: var(--bg2); color: var(--text); }
+
+      /* sessions */
+      #new-chat-btn {
+        background: var(--accent); color: #fff; border: none;
+        border-radius: 100px; padding: 6px 14px;
+        font-size: 12px; font-weight: 600; cursor: pointer;
+        transition: opacity 0.15s; font-family: 'Inter', sans-serif;
+      }
+      #new-chat-btn:hover { opacity: 0.85; }
+
+      #sessions-list { flex: 1; overflow-y: auto; scrollbar-width: none; padding: 8px 0; }
+      #sessions-list::-webkit-scrollbar { display: none; }
+
+      .session-item {
+        padding: 10px 16px; cursor: pointer;
+        transition: background 0.1s; border-bottom: 1px solid var(--border);
+      }
+      .session-item:hover { background: var(--bg2); }
+      .session-item.active { background: var(--accent-light); }
+      .session-title { font-size: 12.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+      .session-date { font-size: 10.5px; color: var(--text3); font-weight: 500; }
+      .sessions-empty { text-align: center; padding: 40px 20px; font-size: 12px; color: var(--text3); }
+
+      /* ── settings content ── */
+      #settings-body { flex: 1; overflow-y: auto; scrollbar-width: none; padding: 16px; display: flex; flex-direction: column; gap: 20px; }
+      #settings-body::-webkit-scrollbar { display: none; }
+
+      .setting-section h4 {
+        font-size: 10px; font-weight: 700; letter-spacing: 1px;
+        text-transform: uppercase; color: var(--text3); margin-bottom: 10px;
+      }
+
+      /* theme swatches */
+      .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+      .theme-swatch {
+        display: flex; flex-direction: column; align-items: center; gap: 5px;
+        cursor: pointer; padding: 6px 2px; border-radius: 10px;
+        transition: background 0.1s; border: 2px solid transparent;
+      }
+      .theme-swatch:hover { background: var(--bg2); }
+      .theme-swatch.active { border-color: var(--accent); background: var(--accent-light); }
+      .swatch-circle { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border2); }
+      .swatch-label { font-size: 9px; font-weight: 600; color: var(--text2); text-align: center; }
+
+      /* font size */
+      .font-btns { display: flex; gap: 8px; }
+      .font-btn {
+        flex: 1; padding: 8px; border: 1.5px solid var(--border2);
+        background: var(--bg); color: var(--text); border-radius: 10px;
+        cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600;
+        transition: all 0.15s;
+      }
+      .font-btn:hover { border-color: var(--accent); }
+      .font-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+
+      /* hotkey */
+      #hotkey-input {
+        width: 100%; padding: 10px 14px;
+        border: 1.5px solid var(--border2); border-radius: 10px;
+        background: var(--bg); color: var(--text);
+        font-size: 13px; font-family: 'Inter', sans-serif; font-weight: 600;
+        text-align: center; cursor: pointer; outline: none;
+        transition: border-color 0.2s;
+      }
+      #hotkey-input:focus { border-color: var(--accent); }
+      #hotkey-input.recording { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+      .hotkey-hint { font-size: 11px; color: var(--text3); text-align: center; margin-top: 6px; }
+
+      #save-settings-btn {
+        width: 100%; padding: 10px; background: var(--accent); color: #fff;
+        border: none; border-radius: 10px; font-size: 13px; font-weight: 600;
+        cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity 0.15s;
+        margin-top: 4px;
+      }
+      #save-settings-btn:hover { opacity: 0.85; }
+
+      /* ── messages ── */
+      #messages {
+        flex: 1; overflow-y: auto;
+        padding: 14px 14px 8px;
+        display: flex; flex-direction: column; gap: 8px;
+        scrollbar-width: none; background: var(--bg);
+        transition: background 0.2s;
+      }
+      #messages::-webkit-scrollbar { display: none; }
+
+      .msg-row { display: flex; flex-direction: column; animation: slide-up 0.18s ease; }
+      @keyframes slide-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+      .msg-row.sent  { align-items: flex-end; }
+      .msg-row.recv  { align-items: flex-start; }
+
+      .bubble {
+        max-width: 82%; padding: 9px 13px;
+        font-size: var(--font-size); line-height: 1.5;
+        word-break: break-word; white-space: pre-wrap; font-weight: 400;
+      }
+      .sent .bubble {
+        background: var(--bubble-sent-bg); color: var(--bubble-sent-color);
+        border-radius: 16px 16px 4px 16px;
+        box-shadow: 0 2px 10px var(--accent-mid);
+      }
+      .recv .bubble {
+        background: var(--bubble-recv-bg); color: var(--bubble-recv-color);
+        border-radius: 16px 16px 16px 4px; font-weight: 500;
+      }
+
+      .msg-time { font-size: 9px; color: var(--text3); margin-top: 3px; padding: 0 4px; font-weight: 500; }
+
+      #typing {
+        display: none; align-self: flex-start; align-items: center; gap: 4px;
+        background: var(--bg2); border-radius: 16px 16px 16px 4px; padding: 11px 14px;
+      }
+      #typing.on { display: flex; }
+      .t-dot { width: 5px; height: 5px; background: var(--text3); border-radius: 50%; animation: pulse 1.3s ease-in-out infinite; }
+      .t-dot:nth-child(2) { animation-delay: 0.18s; }
+      .t-dot:nth-child(3) { animation-delay: 0.36s; }
+      @keyframes pulse {
+        0%,60%,100% { opacity: 0.3; transform: scale(1); }
+        30% { opacity: 1; transform: scale(1.3); background: var(--accent); }
+      }
+
+      .divider { text-align: center; font-size: 9.5px; color: var(--text3); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin: 2px 0 4px; }
+
+      /* ── input bar ── */
+      #inputbar {
+        display: flex; align-items: flex-end; gap: 8px;
+        padding: 10px 12px 14px;
+        background: var(--bg); border-top: 1px solid var(--border);
+        flex-shrink: 0; -webkit-app-region: no-drag;
+        transition: background 0.2s;
+      }
+
+      #input-wrap {
+        flex: 1; background: var(--input-bg); border: 1.5px solid var(--border2);
+        border-radius: 16px; padding: 8px 14px; transition: border-color 0.2s, background 0.2s;
+      }
+      #input-wrap:focus-within { border-color: var(--accent); background: var(--bg); }
+
+      #msg-input {
+        width: 100%; background: transparent; border: none; outline: none;
+        font-size: var(--font-size); font-family: 'Inter', -apple-system, sans-serif;
+        color: var(--text); resize: none; max-height: 80px; min-height: 18px;
+        line-height: 1.5; scrollbar-width: none;
+      }
+      #msg-input::-webkit-scrollbar { display: none; }
+      #msg-input::placeholder { color: var(--text3); }
+
+      #send-btn {
+        width: 34px; height: 34px; background: var(--accent);
+        border: none; border-radius: 50%; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        transition: all 0.15s; box-shadow: 0 2px 10px var(--accent-mid);
+      }
+      #send-btn:hover  { opacity: 0.85; transform: scale(1.07); }
+      #send-btn:active { transform: scale(0.94); }
+      #send-btn:disabled { background: var(--bg2); box-shadow: none; cursor: default; transform: none; }
+
+      #screenshot-btn {
+        width: 34px; height: 34px; background: var(--bg2);
+        border: 1.5px solid var(--border2); border-radius: 50%;
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0; transition: all 0.15s; color: var(--text2);
+      }
+      #screenshot-btn:hover { border-color: var(--text3); }
+      #screenshot-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+      #screenshot-preview {
+        display: none; align-items: center; gap: 8px; padding: 6px 10px;
+        background: var(--accent-light); border-radius: 10px;
+        font-size: 11px; color: var(--accent); font-weight: 600;
+        margin: 0 12px 4px; flex-shrink: 0;
+      }
+      #screenshot-preview.on { display: flex; }
+      #screenshot-preview button { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 13px; padding: 0; line-height: 1; margin-left: auto; }
+      #screenshot-thumb { width: 48px; height: 32px; object-fit: cover; border-radius: 5px; border: 1px solid var(--accent-mid); flex-shrink: 0; }
+    </style>
+  </head>
+  <body>
+
+    <!-- Sessions panel -->
+    <div id="sessions-panel" class="slide-panel">
+      <div class="panel-header">
+        <span>Chats</span>
+        <button id="new-chat-btn">+ New chat</button>
+      </div>
+      <div id="sessions-list"></div>
+    </div>
+
+    <!-- Settings panel -->
+    <div id="settings-panel" class="slide-panel">
+      <div class="panel-header">
+        <span>Settings</span>
+        <button class="panel-close" id="close-settings">✕</button>
+      </div>
+      <div id="settings-body">
+
+        <div class="setting-section">
+          <h4>Theme</h4>
+          <div class="theme-grid">
+            <div class="theme-swatch" data-theme="white">
+              <div class="swatch-circle" style="background:#fff; border-color:#ddd;"></div>
+              <span class="swatch-label">White</span>
+            </div>
+            <div class="theme-swatch" data-theme="dark">
+              <div class="swatch-circle" style="background:#1c1c1e; border-color:#444;"></div>
+              <span class="swatch-label">Dark</span>
+            </div>
+            <div class="theme-swatch" data-theme="black">
+              <div class="swatch-circle" style="background:#000; border-color:#333;"></div>
+              <span class="swatch-label">Black</span>
+            </div>
+            <div class="theme-swatch" data-theme="blue">
+              <div class="swatch-circle" style="background:#2563eb; border-color:#1d4ed8;"></div>
+              <span class="swatch-label">Blue</span>
+            </div>
+            <div class="theme-swatch" data-theme="pink">
+              <div class="swatch-circle" style="background:#db2777; border-color:#be185d;"></div>
+              <span class="swatch-label">Pink</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-section">
+          <h4>Font Size</h4>
+          <div class="font-btns">
+            <button class="font-btn" data-size="11px" style="font-size:11px;">Small</button>
+            <button class="font-btn" data-size="13px" style="font-size:13px;">Medium</button>
+            <button class="font-btn" data-size="15px" style="font-size:15px;">Large</button>
+          </div>
+        </div>
+
+        <div class="setting-section">
+          <h4>Hotkey</h4>
+          <input id="hotkey-input" type="text" readonly placeholder="Click to record new shortcut" />
+          <p class="hotkey-hint">Click the box, then press your shortcut keys</p>
+        </div>
+
+        <button id="save-settings-btn">Save Settings</button>
+      </div>
+    </div>
+
+    <div id="header">
+      <div id="header-left">
+        <button class="icon-btn" id="sessions-btn" title="Chats">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
+          </svg>
+        </button>
+        <div id="header-name"><span class="dot">.</span><span class="text">pinn</span></div>
+      </div>
+      <div id="header-right">
+        <button class="icon-btn" id="settings-btn" title="Settings">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+        <button id="close-btn"></button>
+      </div>
+    </div>
+
+    <div id="messages">
+      <div class="divider">Today</div>
+      <div class="msg-row recv">
+        <div class="bubble">Hey! I'm Pinn 👋 What's on your mind?</div>
+        <div class="msg-time">just now</div>
+      </div>
+      <div id="typing">
+        <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
+      </div>
+    </div>
+
+    <div id="screenshot-preview">
+      <img id="screenshot-thumb" src="" alt=""/>
+      <span>Screenshot ready</span>
+      <button id="clear-screenshot">✕</button>
+    </div>
+    <div id="inputbar">
+      <button id="screenshot-btn" title="Attach screenshot">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+      </button>
+      <div id="input-wrap">
+        <textarea id="msg-input" placeholder="Ask anything…" rows="1"></textarea>
+      </div>
+      <button id="send-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+
+    <script>
+      const { ipcRenderer } = require('electron')
+      const https = require('https')
+      const fs    = require('fs')
+      const path  = require('path')
+      const os    = require('os')
+
+      const isMac = process.platform === 'darwin'
+      const isWin = process.platform === 'win32'
+
+      // On Windows: apply semi-transparent body so acrylic blur shows through
+      if (isWin) {
+        document.body.style.background = 'rgba(255,255,255,0.82)'
+        document.documentElement.style.setProperty('--bg', 'rgba(255,255,255,0.82)')
+        document.documentElement.style.setProperty('--header-bg', 'rgba(255,255,255,0.82)')
+        document.documentElement.style.setProperty('--panel-bg', 'rgba(255,255,255,0.82)')
+      }
+
+      document.getElementById('close-btn').addEventListener('click', () => ipcRenderer.send('close-window'))
+      ipcRenderer.on('screenshot-instructions', () => {
+        // macOS only — Windows uses the selector window instead
+        addMsg('Press Cmd+Shift+4, select your area, then Pinn will grab it automatically.', 'recv')
+      })
+
+      ipcRenderer.on('focus-input', () => {
+        const el = document.getElementById('msg-input')
+        if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length) }
+      })
+      document.addEventListener('click', e => {
+        const el = document.getElementById('msg-input')
+        if (el && !e.target.closest('button') && !e.target.closest('.slide-panel') && !e.target.closest('input')) el.focus()
+      })
+
+      const { GROQ_API_KEY } = require('./config.js')
+      const API_KEY      = GROQ_API_KEY
+      const MODEL        = 'openai/gpt-oss-20b'
+      const VISION_MODEL = 'qwen/qwen3.8-27b'
+      const SESSIONS_DIR = path.join(os.homedir(), '.pinn-sessions')
+      const SETTINGS_FILE = path.join(os.homedir(), '.pinn-settings.json')
+      const MAX_SAVED    = 40
+
+      const SYSTEM_PROMPT = `You are Pinn, a highly intelligent AI assistant inside a hidden desktop app. You reason carefully before answering and always give correct, well-thought-out responses.
+
+FORMATTING — never break these:
+- NEVER use asterisks (*) for anything. Zero asterisks ever.
+- No markdown: no **, no ##, no _, no backticks for formatting.
+- Plain text only. Use "- item" for lists if needed.
+
+STYLE:
+- Think through the problem carefully before answering — accuracy matters more than speed.
+- Give the correct answer first, then explain why if helpful.
+- Match length to the question: short for simple questions, detailed for complex ones.
+- Be confident and precise. Never guess — if unsure, say so clearly.`
+
+      // ── Settings ────────────────────────────────────────────────
+      function loadSettings() {
+        try { return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8')) }
+        catch { return { theme: 'white', fontSize: '13px', hotkey: 'CommandOrControl+Shift+P' } }
+      }
+      function saveSettingsFile(s) {
+        try { fs.writeFileSync(SETTINGS_FILE, JSON.stringify(s, null, 2)) } catch {}
+      }
+
+      let currentSettings = loadSettings()
+
+      function applySettings(s) {
+        // Theme
+        document.body.className = s.theme === 'white' ? '' : `theme-${s.theme}`
+        // Font size
+        document.documentElement.style.setProperty('--font-size', s.fontSize)
+        // Update active states
+        document.querySelectorAll('.theme-swatch').forEach(el => {
+          el.classList.toggle('active', el.dataset.theme === s.theme)
+        })
+        document.querySelectorAll('.font-btn').forEach(el => {
+          el.classList.toggle('active', el.dataset.size === s.fontSize)
+        })
+        document.getElementById('hotkey-input').value = s.hotkey
+      }
+
+      applySettings(currentSettings)
+
+      // Settings panel
+      document.getElementById('settings-btn').addEventListener('click', () => {
+        applySettings(currentSettings)
+        document.getElementById('settings-panel').classList.add('open')
+      })
+      document.getElementById('close-settings').addEventListener('click', () => {
+        document.getElementById('settings-panel').classList.remove('open')
+      })
+
+      document.querySelectorAll('.theme-swatch').forEach(el => {
+        el.addEventListener('click', () => {
+          currentSettings.theme = el.dataset.theme
+          applySettings(currentSettings)
+        })
+      })
+
+      document.querySelectorAll('.font-btn').forEach(el => {
+        el.addEventListener('click', () => {
+          currentSettings.fontSize = el.dataset.size
+          applySettings(currentSettings)
+        })
+      })
+
+      // Hotkey recorder
+      const hotkeyInput = document.getElementById('hotkey-input')
+      let recordingHotkey = false
+      hotkeyInput.addEventListener('click', () => {
+        hotkeyInput.value = 'Press your shortcut…'
+        hotkeyInput.classList.add('recording')
+        recordingHotkey = true
+      })
+      hotkeyInput.addEventListener('keydown', e => {
+        if (!recordingHotkey) return
+        e.preventDefault()
+        const parts = []
+        if (e.metaKey || e.ctrlKey) parts.push('CommandOrControl')
+        if (e.shiftKey) parts.push('Shift')
+        if (e.altKey) parts.push('Alt')
+        const key = e.key.toUpperCase()
+        if (!['CONTROL','SHIFT','ALT','META','COMMAND'].includes(key) && parts.length > 0) {
+          parts.push(key)
+          currentSettings.hotkey = parts.join('+')
+          hotkeyInput.value = currentSettings.hotkey
+          hotkeyInput.classList.remove('recording')
+          recordingHotkey = false
+        }
+      })
+
+      document.getElementById('save-settings-btn').addEventListener('click', () => {
+        saveSettingsFile(currentSettings)
+        ipcRenderer.send('update-hotkey', currentSettings.hotkey)
+        document.getElementById('settings-panel').classList.remove('open')
+      })
+
+      // ── Sessions ────────────────────────────────────────────────
+      try { fs.mkdirSync(SESSIONS_DIR, { recursive: true }) } catch {}
+      let currentSessionId = null
+
+      function listSessions() {
+        try {
+          return fs.readdirSync(SESSIONS_DIR).filter(f => f.endsWith('.json'))
+            .map(f => { try { return JSON.parse(fs.readFileSync(path.join(SESSIONS_DIR, f), 'utf8')) } catch { return null } })
+            .filter(Boolean).sort((a, b) => b.created - a.created)
+        } catch { return [] }
+      }
+
+      function saveSession(id, messages) {
+        if (!id || messages.length === 0) return
+        const title = messages.find(m => m.role === 'user')?.content
+        const safeTitle = Array.isArray(title) ? (title.find(p => p.type === 'text')?.text || 'Screenshot') : (title || 'New chat')
+        const clean = messages.map(m => {
+          if (Array.isArray(m.content)) { const t = m.content.find(p => p.type === 'text'); return { role: m.role, content: t ? t.text : '(screenshot)' } }
+          return m
+        }).slice(-MAX_SAVED)
+        try { fs.writeFileSync(path.join(SESSIONS_DIR, id + '.json'), JSON.stringify({ id, created: parseInt(id), title: safeTitle.slice(0, 60), messages: clean }, null, 2)) } catch {}
+      }
+
+      function loadSession(id) {
+        try { return JSON.parse(fs.readFileSync(path.join(SESSIONS_DIR, id + '.json'), 'utf8')).messages || [] }
+        catch { return [] }
+      }
+
+      function renderSessionsList() {
+        const list = document.getElementById('sessions-list')
+        const sessions = listSessions()
+        if (!sessions.length) { list.innerHTML = '<div class="sessions-empty">No past chats yet</div>'; return }
+        list.innerHTML = sessions.map(s => {
+          const d = new Date(s.created)
+          return `<div class="session-item${s.id === currentSessionId ? ' active' : ''}" data-id="${s.id}">
+            <div class="session-title">${s.title.replace(/</g,'&lt;')}</div>
+            <div class="session-date">${d.toLocaleDateString(undefined, { month:'short', day:'numeric' })}</div>
+          </div>`
+        }).join('')
+        list.querySelectorAll('.session-item').forEach(el => {
+          el.addEventListener('click', () => {
+            if (el.dataset.id === currentSessionId) { closeSessionsPanel(); return }
+            switchToSession(el.dataset.id)
+          })
+        })
+      }
+
+      function switchToSession(id) {
+        if (currentSessionId && history.length > 1) saveSession(currentSessionId, history.slice(1))
+        currentSessionId = id
+        const msgs = loadSession(id)
+        history.length = 1
+        history.push(...msgs)
+        renderMessages()
+        closeSessionsPanel()
+      }
+
+      function startNewChat() {
+        if (currentSessionId && history.length > 1) saveSession(currentSessionId, history.slice(1))
+        currentSessionId = Date.now().toString()
+        history.length = 1
+        renderMessages()
+        closeSessionsPanel()
+        setTimeout(() => document.getElementById('msg-input').focus(), 100)
+      }
+
+      const sessionsPanel = document.getElementById('sessions-panel')
+      document.getElementById('sessions-btn').addEventListener('click', () => { renderSessionsList(); sessionsPanel.classList.add('open') })
+      document.getElementById('new-chat-btn').addEventListener('click', startNewChat)
+      function closeSessionsPanel() { sessionsPanel.classList.remove('open') }
+
+      // ── Screenshot ─────────────────────────────────────────────
+      let pendingScreenshot = null
+      const screenshotBtn     = document.getElementById('screenshot-btn')
+      const screenshotPreview = document.getElementById('screenshot-preview')
+
+      screenshotBtn.addEventListener('click', async () => {
+        screenshotBtn.disabled = true
+
+        try {
+          const dataUrl = await ipcRenderer.invoke('take-screenshot')
+          if (dataUrl) {
+            // Resize image to max 1280px wide before storing — keeps it under API limits
+            const resized = await resizeImage(dataUrl, 1280)
+            pendingScreenshot = resized
+            document.getElementById('screenshot-thumb').src = resized
+            screenshotBtn.classList.add('active')
+            screenshotPreview.classList.add('on')
+          }
+        } catch (e) { addMsg('Could not capture screenshot — ' + e.message, 'recv') }
+        screenshotBtn.disabled = false
+      })
+
+      document.getElementById('clear-screenshot').addEventListener('click', () => {
+        pendingScreenshot = null
+        screenshotBtn.classList.remove('active')
+        screenshotPreview.classList.remove('on')
+      })
+
+      // ── History & Render ───────────────────────────────────────
+      const messagesEl = document.getElementById('messages')
+      const inputEl    = document.getElementById('msg-input')
+      const sendBtn    = document.getElementById('send-btn')
+      const typing     = document.getElementById('typing')
+
+      const history = [{ role: 'system', content: SYSTEM_PROMPT }]
+
+      const allSessions = listSessions()
+      if (allSessions.length > 0) {
+        currentSessionId = allSessions[0].id
+        history.push(...loadSession(currentSessionId))
+      } else {
+        currentSessionId = Date.now().toString()
+      }
+
+      function renderMessages() {
+        messagesEl.querySelectorAll('.msg-row').forEach(r => r.remove())
+        history.slice(1).forEach(m => {
+          if (m.role === 'user' || m.role === 'assistant') addMsg(m.content, m.role === 'user' ? 'sent' : 'recv', true)
+        })
+        messagesEl.scrollTop = messagesEl.scrollHeight
+      }
+      renderMessages()
+
+      function resizeImage(dataUrl, maxWidth) {
+        return new Promise(resolve => {
+          const img = new Image()
+          img.onload = () => {
+            const scale = Math.min(1, maxWidth / img.width)
+            const w = Math.round(img.width * scale)
+            const h = Math.round(img.height * scale)
+            const canvas = document.createElement('canvas')
+            canvas.width = w; canvas.height = h
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+            resolve(canvas.toDataURL('image/jpeg', 0.75))
+          }
+          img.src = dataUrl
+        })
+      }
+
+      function timeNow() {
+        const d = new Date(); let h = d.getHours(), m = d.getMinutes()
+        const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12
+        return `${h}:${String(m).padStart(2,'0')} ${ap}`
+      }
+
+      function addMsg(text, side, silent = false) {
+        let safeText = Array.isArray(text) ? (text.find(p => p.type === 'text')?.text || '(screenshot)') : String(text || '')
+        const row = document.createElement('div')
+        row.className = `msg-row ${side}`
+        row.innerHTML = `<div class="bubble">${safeText.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div><div class="msg-time">${timeNow()}</div>`
+        messagesEl.insertBefore(row, typing)
+        if (!silent) messagesEl.scrollTop = messagesEl.scrollHeight
+      }
+
+      async function askAI(userMsg, screenshot = null) {
+        const userContent = screenshot
+          ? [{ type: 'image_url', image_url: { url: screenshot } }, { type: 'text', text: userMsg || 'What do you see on my screen?' }]
+          : userMsg
+        history.push({ role: 'user', content: userContent })
+        typing.classList.add('on')
+        messagesEl.scrollTop = messagesEl.scrollHeight
+
+        const useModel = screenshot ? VISION_MODEL : MODEL
+        const cleanHistory = history.map((m, i) => {
+          if (Array.isArray(m.content) && i < history.length - 1) {
+            const t = m.content.find(p => p.type === 'text')
+            return { role: m.role, content: t ? t.text : '(screenshot)' }
+          }
+          return m
+        })
+        // Keep system prompt + last 10 messages to avoid context overflow
+        const trimmed = [cleanHistory[0], ...cleanHistory.slice(1).slice(-10)]
+        const body = JSON.stringify({ model: useModel, messages: trimmed, max_tokens: 1024 })
+
+        try {
+          const reply = await new Promise((resolve, reject) => {
+            const req = https.request({
+              hostname: 'api.groq.com', path: '/openai/v1/chat/completions', method: 'POST',
+              headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+            }, res => {
+              let data = ''
+              res.on('data', d => data += d)
+              res.on('end', () => {
+                try {
+                  const json = JSON.parse(data)
+                  if (json.error) return reject(new Error(json.error.message))
+                  const raw = json.choices[0].message.content.trim()
+                  resolve(raw.replace(/\*+/g, '').replace(/_{2,}/g, '').replace(/#{1,6}\s/g, ''))
+                } catch { reject(new Error('Bad response')) }
+              })
+            })
+            req.on('error', reject); req.write(body); req.end()
+          })
+          history.push({ role: 'assistant', content: reply })
+          saveSession(currentSessionId, history.slice(1))
+          typing.classList.remove('on')
+          addMsg(reply, 'recv')
+        } catch (err) {
+          typing.classList.remove('on')
+          addMsg('Something went wrong — ' + err.message, 'recv')
+        }
+      }
+
+      function send() {
+        const msg = inputEl.value.trim()
+        if ((!msg && !pendingScreenshot) || sendBtn.disabled) return
+        const screenshot = pendingScreenshot
+        pendingScreenshot = null
+        screenshotBtn.classList.remove('active')
+        screenshotPreview.classList.remove('on')
+        inputEl.value = ''; inputEl.style.height = 'auto'
+        sendBtn.disabled = true
+        addMsg((msg || '(screenshot)') + (screenshot ? ' 📸' : ''), 'sent')
+        askAI(msg, screenshot).finally(() => { sendBtn.disabled = false })
+      }
+
+      sendBtn.addEventListener('click', send)
+      inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } })
+      inputEl.addEventListener('input', () => { inputEl.style.height = 'auto'; inputEl.style.height = Math.min(inputEl.scrollHeight, 80) + 'px' })
+
+      messagesEl.scrollTop = messagesEl.scrollHeight
+    </script>
+  </body>
+</html>
