@@ -89,67 +89,79 @@ ipcMain.on('open-screen-permissions', () => {
 
 ipcMain.handle('take-screenshot', async () => {
   if (isWin) {
-    // Windows: desktopCapturer works without any permission
     win.hide()
-    win.setContentProtection(false)
+    try { win.setContentProtection(false) } catch {}
 
-    // Give the window time to fully hide before capturing
-    await new Promise(r => setTimeout(r, 300))
+    // Wait for window to fully disappear before capturing
+    await new Promise(r => setTimeout(r, 400))
 
-    const { width, height } = screen.getPrimaryDisplay().size
+    const display = screen.getPrimaryDisplay()
+    const { width, height } = display.size
+    const scale = display.scaleFactor || 1 // e.g. 1.25 on 125% DPI
+
+    // Capture at physical pixel resolution so image matches screen exactly
     let sources
     try {
-      sources = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width, height } })
-    } catch {
-      win.setContentProtection(true)
+      sources = await desktopCapturer.getSources({
+        types: ['screen'],
+        thumbnailSize: { width: Math.round(width * scale), height: Math.round(height * scale) }
+      })
+    } catch (e) {
+      try { win.setContentProtection(true) } catch {}
       focusAndShow()
       return null
     }
 
     if (!sources.length) {
-      win.setContentProtection(true)
+      try { win.setContentProtection(true) } catch {}
       focusAndShow()
       return null
     }
 
     const fullDataUrl = sources[0].thumbnail.toDataURL()
 
-    // Open the selector overlay so user can drag to pick an area
+    // Open selector overlay — explicit size instead of fullscreen (transparent+fullscreen breaks on Windows)
     return new Promise(resolve => {
       selectorWin = new BrowserWindow({
-        fullscreen: true,
+        x: 0, y: 0,
+        width, height,
         frame: false,
         alwaysOnTop: true,
         skipTaskbar: true,
         transparent: true,
+        resizable: false,
+        movable: false,
         webPreferences: { nodeIntegration: true, contextIsolation: false }
       })
       selectorWin.loadFile('selector.html')
+      selectorWin.setAlwaysOnTop(true, 'screen-saver')
 
-      selectorWin.once('ready-to-show', () => {
+      // did-finish-load is more reliable than ready-to-show for transparent windows on Windows
+      selectorWin.webContents.once('did-finish-load', () => {
         selectorWin.show()
+        selectorWin.focus()
         selectorWin.webContents.send('screenshot', fullDataUrl)
       })
 
       ipcMain.once('selection-done', (_, { x, y, w, h }) => {
-        selectorWin.close()
-        selectorWin = null
+        if (selectorWin) { selectorWin.close(); selectorWin = null }
 
-        // Crop the full screenshot to the selected area
+        // Scale logical pixel coords → physical pixels to match the captured image
         const img = nativeImage.createFromDataURL(fullDataUrl)
         const cropped = img.crop({
-          x: Math.round(x), y: Math.round(y),
-          width: Math.round(w), height: Math.round(h)
+          x: Math.round(x * scale), y: Math.round(y * scale),
+          width: Math.max(1, Math.round(w * scale)),
+          height: Math.max(1, Math.round(h * scale))
         })
 
-        win.setContentProtection(true)
+        try { win.setContentProtection(true) } catch {}
         focusAndShow()
         resolve(cropped.toDataURL())
       })
 
       ipcMain.once('selection-cancel', () => {
         if (selectorWin) { selectorWin.close(); selectorWin = null }
-        win.setContentProtection(true)
+        try { win.setContentProtection(true) } catch {}
         focusAndShow()
         resolve(null)
       })
