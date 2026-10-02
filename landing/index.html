@@ -263,125 +263,47 @@
     }
     .btn-white .chip { background: rgba(0,0,0,.09); color: #444; }
 
-    /* DOCS SIDEBAR */
-    #docs-overlay {
-      position: fixed; inset: 0; z-index: 190;
-      background: rgba(0,0,0,0); pointer-events: none;
-      transition: background .3s ease;
+    /* DOCS INLINE SECTION */
+    .docs-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 40px; justify-content: center; }
+    .docs-tab {
+      padding: 8px 18px; border-radius: 100px; cursor: pointer;
+      font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--muted);
+      border: 1px solid var(--border); background: #fff; transition: all .14s;
     }
-    #docs-overlay.open { background: rgba(0,0,0,0.38); pointer-events: all; }
+    .docs-tab:hover { border-color: #c8cdd4; color: var(--text); }
+    .docs-tab.active { background: var(--g); color: #fff; border-color: var(--g); font-weight: 600; }
 
-    #docs-sidebar {
-      position: fixed; top: 0; right: 0; bottom: 0; z-index: 200;
-      width: 640px; max-width: 100vw;
-      background: #fff;
-      display: flex; flex-direction: column;
-      transform: translateX(100%);
-      transition: transform .32s cubic-bezier(.4,0,.2,1);
-      box-shadow: -24px 0 80px rgba(0,0,0,.12), -1px 0 0 rgba(0,0,0,.06);
-    }
-    #docs-sidebar.open { transform: translateX(0); }
+    .docs-panel { display: none; max-width: 780px; margin: 0 auto; }
+    .docs-panel.active { display: block; }
 
-    #docs-sidebar-head {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 28px; height: 60px; flex-shrink: 0;
-      border-bottom: 1px solid var(--border);
-      background: #fff;
-    }
-    .docs-brand { display: flex; align-items: center; gap: 10px; }
-    .docs-brand-name { font-family: var(--font-display); font-size: 16px; font-weight: 800; letter-spacing: -.5px; }
-    .docs-brand-name span { color: var(--g); }
-    .docs-badge { font-family: var(--font-body); font-size: 10px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase;
-      background: var(--g-light); color: var(--g); padding: 3px 10px; border-radius: 100px; border: 1px solid #c6e8d5; }
-    #close-docs {
-      width: 32px; height: 32px; border: none; background: #f5f5f5; border-radius: 8px;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      color: #888; transition: all .15s;
-    }
-    #close-docs:hover { background: #eee; color: #111; }
-
-    #docs-inner { display: flex; flex: 1; overflow: hidden; }
-
-    /* Left nav */
-    #docs-nav {
-      width: 196px; flex-shrink: 0;
-      background: #0a0a0a;
-      padding: 20px 0;
-      overflow-y: auto; scrollbar-width: none;
-      display: flex; flex-direction: column; gap: 2px;
-    }
-    #docs-nav::-webkit-scrollbar { display: none; }
-    .dn-section-label {
-      font-family: var(--font-body); font-size: 9.5px; font-weight: 600;
-      letter-spacing: 1.3px; text-transform: uppercase;
-      color: #4a4a4a; padding: 14px 20px 6px; margin-top: 6px;
-    }
-    .dn-section-label:first-child { margin-top: 0; }
-    .dn {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 20px; margin: 0 8px; border-radius: 8px;
-      cursor: pointer; text-decoration: none;
-      font-family: var(--font-body); color: #888; font-size: 13.5px; font-weight: 500;
-      letter-spacing: -.01em;
-      transition: all .15s; border: none; background: none;
-      width: calc(100% - 16px); text-align: left;
-    }
-    .dn:hover { background: #1a1a1a; color: #ccc; }
-    .dn.active { background: #1a7a3c; color: #fff; }
-    .dn-ic { width: 26px; height: 26px; border-radius: 6px; background: rgba(255,255,255,.06);
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .dn.active .dn-ic { background: rgba(255,255,255,.18); }
-    .dn span { flex: 1; }
-
-    /* Content area */
-    #docs-content {
-      flex: 1; overflow-y: auto; padding: 36px 36px 60px;
-      scrollbar-width: thin; scrollbar-color: #ddd transparent;
-    }
-    #docs-content::-webkit-scrollbar { width: 4px; }
-    #docs-content::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
-
-    .dsec { display: none; }
-    .dsec.active { display: block; }
-
-    .dsec-icon {
-      width: 44px; height: 44px; background: #f0f9f4; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--g); margin-bottom: 16px;
-      border: 1px solid #d4edd9;
-    }
-    .dsec h2 { font-family: var(--font-display); font-size: 24px; font-weight: 800; letter-spacing: -.8px; margin-bottom: 8px; }
-    .dsec-desc { font-family: var(--font-body); font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 28px; max-width: 380px; }
+    .docs-panel-header { margin-bottom: 28px; }
+    .docs-panel-header h3 { font-family: var(--font-display); font-size: 26px; font-weight: 800; letter-spacing: -.8px; margin-bottom: 8px; }
+    .docs-panel-header p { font-family: var(--font-body); font-size: 15px; color: var(--muted); line-height: 1.7; max-width: 500px; }
 
     .ditem {
-      display: flex; gap: 16px; padding: 16px 0;
-      border-bottom: 1px solid #f3f4f6; align-items: flex-start;
+      display: flex; gap: 20px; padding: 18px 0;
+      border-bottom: 1px solid var(--border); align-items: flex-start;
     }
-    .ditem:last-child { border-bottom: none; }
-    .ditem-left { flex-shrink: 0; width: 130px; }
+    .ditem:last-of-type { border-bottom: none; }
+    .ditem-left { flex-shrink: 0; width: 140px; }
     .dkey {
-      display: inline-flex; align-items: center; gap: 4px;
+      display: inline-flex; align-items: center;
       background: #f8f9fa; border: 1px solid #e5e7eb;
-      border-radius: 7px; padding: 5px 10px;
+      border-radius: 7px; padding: 5px 11px;
       font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: #374151;
-      box-shadow: 0 1px 0 #e5e7eb;
-      white-space: nowrap;
+      box-shadow: 0 1px 0 #e5e7eb; white-space: nowrap;
     }
     .ditem-right { flex: 1; }
-    .ditem-title { font-family: var(--font-display); font-size: 14px; font-weight: 700; letter-spacing: -.3px; color: var(--text); margin-bottom: 4px; }
-    .ditem-body { font-family: var(--font-body); font-size: 13px; color: var(--muted); line-height: 1.65; }
-    .ditem-body code {
-      background: #f3f4f6; border: 1px solid #e5e7eb;
-      padding: 1px 6px; border-radius: 4px;
-      font-family: var(--font-mono); font-size: 11px; color: #374151;
-    }
+    .ditem-title { font-family: var(--font-display); font-size: 14.5px; font-weight: 700; letter-spacing: -.3px; color: var(--text); margin-bottom: 4px; }
+    .ditem-body { font-family: var(--font-body); font-size: 13.5px; color: var(--muted); line-height: 1.65; }
+    .ditem-body code { background: #f3f4f6; border: 1px solid #e5e7eb; padding: 1px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; color: #374151; }
 
-    .dsec-tip {
+    .docs-tip {
       margin-top: 24px; background: var(--g-light); border: 1px solid #c6e8d5;
-      border-radius: 10px; padding: 14px 18px; display: flex; gap: 10px; align-items: flex-start;
+      border-radius: 12px; padding: 14px 18px; display: flex; gap: 10px; align-items: flex-start;
     }
-    .dsec-tip-ic { color: var(--g); flex-shrink: 0; margin-top: 1px; }
-    .dsec-tip p { font-family: var(--font-body); font-size: 13px; color: #1a5c2e; line-height: 1.65; }
+    .docs-tip svg { color: var(--g); flex-shrink: 0; margin-top: 1px; }
+    .docs-tip p { font-family: var(--font-body); font-size: 13px; color: #1a5c2e; line-height: 1.65; }
 
     /* MOCKUP fonts */
     .mh-logo { font-family: var(--font-display); font-size: 13px; font-weight: 800; }
@@ -434,19 +356,19 @@
 
   <div class="sb-section">
     <div class="sb-label">Resources</div>
-    <button class="sb-link" onclick="openDocs('shortcut')">
+    <a href="#docs" class="sb-link" onclick="sbNav(this)">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       Docs
-    </button>
-    <button class="sb-link" onclick="openDocs('privacy')">
+    </a>
+    <a href="#docs" class="sb-link" onclick="sbNav(this)">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       Privacy
-    </button>
+    </a>
   </div>
 
   <div class="sb-bottom">
     <div class="sb-divider"></div>
-    <a href="#cta" class="sb-download" onclick="closeSidebar()">
+    <a href="dist/Pinn-mac-arm64.zip" download class="sb-download" onclick="closeSidebar()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Download free
     </a>
@@ -581,272 +503,140 @@
 
 </div><!-- /main -->
 
-<!-- DOCS SIDEBAR -->
-<div id="docs-overlay" onclick="closeDocs()"></div>
+<!-- DOCS -->
+<section class="section alt" id="docs">
+  <p class="label">Documentation</p>
+  <h2 class="title">How every feature works</h2>
 
-<aside id="docs-sidebar">
-  <div id="docs-sidebar-head">
-    <div class="docs-brand">
-      <div class="docs-brand-name"><span>.</span>pinn</div>
-      <span class="docs-badge">Docs</span>
+  <div class="docs-tabs">
+    <button class="docs-tab active" data-panel="shortcut">Shortcut</button>
+    <button class="docs-tab" data-panel="chat">Chat</button>
+    <button class="docs-tab" data-panel="screenshot">Screenshot</button>
+    <button class="docs-tab" data-panel="sessions">Sessions</button>
+    <button class="docs-tab" data-panel="settings">Settings</button>
+    <button class="docs-tab" data-panel="privacy">Privacy</button>
+  </div>
+
+  <div class="docs-panel active" id="dp-shortcut">
+    <div class="docs-panel-header">
+      <h3>Shortcut</h3>
+      <p>Pinn lives in your keyboard. One combo summons it from anywhere — even over fullscreen apps.</p>
     </div>
-    <button id="close-docs" onclick="closeDocs()" aria-label="Close">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">⌘ Shift P</span></div>
+      <div class="ditem-right"><div class="ditem-title">Show / Hide</div><div class="ditem-body">Press from any app to toggle Pinn. Works over fullscreen, video calls, games — anything.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Ctrl Shift P</span></div>
+      <div class="ditem-right"><div class="ditem-title">Windows shortcut</div><div class="ditem-body">Same behaviour on Windows. Ctrl replaces Cmd automatically.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Esc</span></div>
+      <div class="ditem-right"><div class="ditem-title">Dismiss</div><div class="ditem-body">Close Pinn immediately without touching the mouse.</div></div>
+    </div>
+    <div class="docs-tip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>Change the shortcut to any combination inside Settings → Hotkey. Registers system-wide immediately.</p></div>
   </div>
 
-  <div id="docs-inner">
-    <!-- Left nav -->
-    <nav id="docs-nav">
-      <div class="dn-section-label">Getting started</div>
-      <button class="dn active" data-sec="shortcut">
-        <span class="dn-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>
-        <span>Shortcut</span>
-      </button>
-      <button class="dn" data-sec="chat">
-        <span class="dn-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-        <span>Chat</span>
-      </button>
-      <div class="dn-section-label">Features</div>
-      <button class="dn" data-sec="screenshot">
-        <span class="dn-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
-        <span>Screenshot</span>
-      </button>
-      <button class="dn" data-sec="sessions">
-        <span class="dn-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
-        <span>Sessions</span>
-      </button>
-      <div class="dn-section-label">Customization</div>
-      <button class="dn" data-sec="settings">
-        <span class="dn-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-        <span>Settings</span>
-      </button>
-      <button class="dn" data-sec="privacy">
-        <span class="dn-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
-        <span>Privacy</span>
-      </button>
-    </nav>
-
-    <!-- Content -->
-    <div id="docs-content">
-
-      <!-- SHORTCUT -->
-      <div class="dsec active" id="dsec-shortcut">
-        <div class="dsec-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
-        <h2>Shortcut</h2>
-        <p class="dsec-desc">Pinn lives in your keyboard. One combo summons it from anywhere — even over fullscreen apps — and another dismisses it instantly.</p>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">⌘ Shift P</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">Show / Hide</div>
-            <div class="ditem-body">Press from any app to toggle Pinn. Works over fullscreen, video calls, games — anything.</div>
-          </div>
-        </div>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">Ctrl Shift P</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">Windows shortcut</div>
-            <div class="ditem-body">Same behaviour on Windows. Ctrl replaces Cmd automatically.</div>
-          </div>
-        </div>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">Esc</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">Dismiss</div>
-            <div class="ditem-body">Close Pinn immediately without touching the mouse.</div>
-          </div>
-        </div>
-        <div class="dsec-tip">
-          <div class="dsec-tip-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-          <p>You can change the shortcut to any combination you like inside Settings → Hotkey. The new shortcut is registered system-wide immediately.</p>
-        </div>
-      </div>
-
-      <!-- CHAT -->
-      <div class="dsec" id="dsec-chat">
-        <div class="dsec-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-        <h2>Chat</h2>
-        <p class="dsec-desc">A focused chat interface powered by a fast AI model. No clutter. Just your question and a sharp answer.</p>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">Enter</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">Send message</div>
-            <div class="ditem-body">Send your message and get a response. The AI streams the reply as it's generated.</div>
-          </div>
-        </div>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">Shift Enter</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">New line</div>
-            <div class="ditem-body">Add a line break without sending — useful for multi-line questions or code snippets.</div>
-          </div>
-        </div>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">Memory</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">Persistent context</div>
-            <div class="ditem-body">Pinn retains a memory file at <code>~/.pinn-memory.json</code> that carries context across sessions. It learns your preferences over time.</div>
-          </div>
-        </div>
-        <div class="dsec-tip">
-          <div class="dsec-tip-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-          <p>The AI responds in plain text — no markdown, no asterisks. Clean, readable answers every time.</p>
-        </div>
-      </div>
-
-      <!-- SCREENSHOT -->
-      <div class="dsec" id="dsec-screenshot">
-        <div class="dsec-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
-        <h2>Screenshot</h2>
-        <p class="dsec-desc">Capture any part of your screen and send it straight to the AI. Ask about a bug, a design, an error message — anything visual.</p>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">Camera icon</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">Start capture (macOS)</div>
-            <div class="ditem-body">Pinn hides itself. Use <code>⌘ Shift 4</code> to drag-select any area. As soon as you release, Pinn picks up the file from your Desktop automatically.</div>
-          </div>
-        </div>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">Camera icon</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">Start capture (Windows)</div>
-            <div class="ditem-body">Pinn hides, takes a silent full-screen snapshot, then shows a dark overlay. Drag to select your area — no extra app or permission needed.</div>
-          </div>
-        </div>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">Auto attach</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">Thumbnail preview</div>
-            <div class="ditem-body">A thumbnail appears above the input bar. Type your question and hit Enter — the screenshot is sent along with your message.</div>
-          </div>
-        </div>
-        <div class="dsec-tip">
-          <div class="dsec-tip-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-          <p>Images are compressed to 1280px wide before sending to stay within API limits. Quality is preserved well enough for code, UI, and text screenshots.</p>
-        </div>
-      </div>
-
-      <!-- SESSIONS -->
-      <div class="dsec" id="dsec-sessions">
-        <div class="dsec-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-        <h2>Sessions</h2>
-        <p class="dsec-desc">Every conversation is saved automatically. Switch between them, start fresh, or pick up where you left off — all stored locally on your machine.</p>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">New chat</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">Start fresh</div>
-            <div class="ditem-body">Opens a blank conversation. The previous session is saved automatically before switching.</div>
-          </div>
-        </div>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">History panel</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">Browse past chats</div>
-            <div class="ditem-body">Click the sessions icon in the header to open the history panel. Tap any entry to resume that conversation.</div>
-          </div>
-        </div>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">Storage</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">Where sessions live</div>
-            <div class="ditem-body">Sessions are saved as JSON files in <code>~/.pinn-sessions/</code>. You can read, back up, or delete them directly.</div>
-          </div>
-        </div>
-        <div class="dsec-tip">
-          <div class="dsec-tip-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-          <p>Sessions never leave your device. Nothing is synced to a server. Your conversation history is yours entirely.</p>
-        </div>
-      </div>
-
-      <!-- SETTINGS -->
-      <div class="dsec" id="dsec-settings">
-        <div class="dsec-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
-        <h2>Settings</h2>
-        <p class="dsec-desc">Personalise Pinn to match your style and workflow. Open Settings from the gear icon in the header.</p>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">Theme</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">5 colour themes</div>
-            <div class="ditem-body">Choose from White, Dark, Black, Blue, or Pink. The theme switches instantly without restarting.</div>
-          </div>
-        </div>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">Font size</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">Small · Medium · Large</div>
-            <div class="ditem-body">Three sizes to keep the interface comfortable at whatever display scaling you use.</div>
-          </div>
-        </div>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">Hotkey</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">Custom shortcut</div>
-            <div class="ditem-body">Click the hotkey field and press your preferred key combination. It registers system-wide as soon as you save.</div>
-          </div>
-        </div>
-        <div class="dsec-tip">
-          <div class="dsec-tip-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-          <p>All settings are stored in <code>~/.pinn-settings.json</code> and persist across restarts automatically.</p>
-        </div>
-      </div>
-
-      <!-- PRIVACY -->
-      <div class="dsec" id="dsec-privacy">
-        <div class="dsec-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-        <h2>Privacy</h2>
-        <p class="dsec-desc">Pinn is designed from the ground up to leave no trace. What you type stays on your machine.</p>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">OS invisible</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">No dock, no switcher</div>
-            <div class="ditem-body">On macOS: no Dock icon, no Mission Control, no Cmd+Tab entry. On Windows: no taskbar button, no Alt+Tab entry.</div>
-          </div>
-        </div>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">Screen share</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">Invisible to recording</div>
-            <div class="ditem-body">Content protection is enabled at the OS level — Pinn's window does not appear in Zoom, Teams, Meet, OBS, or any screen recording software.</div>
-          </div>
-        </div>
-        <div class="ditem">
-          <div class="ditem-left"><span class="dkey">Local only</span></div>
-          <div class="ditem-right">
-            <div class="ditem-title">Nothing leaves your device</div>
-            <div class="ditem-body">Chat history, memory, and settings are stored in plain JSON files on your machine. No account, no cloud sync, no telemetry.</div>
-          </div>
-        </div>
-        <div class="dsec-tip">
-          <div class="dsec-tip-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-          <p>The only outbound connection Pinn makes is to the AI API when you send a message. Your message content is sent to the AI provider to generate a response.</p>
-        </div>
-      </div>
-
-    </div><!-- /docs-content -->
-  </div><!-- /docs-inner -->
-</aside>
-
-<!-- CTA -->
-<section class="cta" id="cta">
-  <h2>Get <em>.pinn</em> free</h2>
-  <p>No account. No subscription. Just download and run.</p>
-  <div class="dl-btns">
-    <a href="dist/Pinn-mac-arm64.zip" download class="btn-white">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Apple Silicon
-      <span class="chip">M1 · M2 · M3 · M4</span>
-    </a>
-    <a href="dist/Pinn-mac-x64.zip" download class="btn-white-outline">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Intel Mac
-      <span class="chip">x64</span>
-    </a>
-    <a href="dist/Pinn-Setup-Windows-x64.exe" download class="btn-white-outline" id="win-btn">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/></svg>
-      Windows
-      <span class="chip">x64</span>
-    </a>
+  <div class="docs-panel" id="dp-chat">
+    <div class="docs-panel-header">
+      <h3>Chat</h3>
+      <p>A focused chat interface powered by a fast AI model. No clutter. Just your question and a sharp answer.</p>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Enter</span></div>
+      <div class="ditem-right"><div class="ditem-title">Send message</div><div class="ditem-body">Send your message and get a response. The AI streams the reply as it's generated.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Shift Enter</span></div>
+      <div class="ditem-right"><div class="ditem-title">New line</div><div class="ditem-body">Add a line break without sending — useful for multi-line questions or code snippets.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Memory</span></div>
+      <div class="ditem-right"><div class="ditem-title">Persistent context</div><div class="ditem-body">Pinn retains a memory file at <code>~/.pinn-memory.json</code> that carries context across sessions.</div></div>
+    </div>
+    <div class="docs-tip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>The AI responds in plain text — no markdown, no asterisks. Clean, readable answers every time.</p></div>
   </div>
+
+  <div class="docs-panel" id="dp-screenshot">
+    <div class="docs-panel-header">
+      <h3>Screenshot</h3>
+      <p>Capture any part of your screen and send it straight to the AI. Ask about a bug, a design, an error — anything visual.</p>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Camera icon</span></div>
+      <div class="ditem-right"><div class="ditem-title">Start capture (macOS)</div><div class="ditem-body">Pinn hides itself. Use <code>⌘ Shift 4</code> to drag-select any area. Pinn picks up the file from your Desktop automatically.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Camera icon</span></div>
+      <div class="ditem-right"><div class="ditem-title">Start capture (Windows)</div><div class="ditem-body">Pinn hides, takes a silent snapshot, then shows a dark overlay. Drag to select your area — no permission needed.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Auto attach</span></div>
+      <div class="ditem-right"><div class="ditem-title">Thumbnail preview</div><div class="ditem-body">A thumbnail appears above the input bar. Type your question and hit Enter — the screenshot is sent automatically.</div></div>
+    </div>
+    <div class="docs-tip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>Images are compressed to 1280px wide before sending to stay within API limits.</p></div>
+  </div>
+
+  <div class="docs-panel" id="dp-sessions">
+    <div class="docs-panel-header">
+      <h3>Sessions</h3>
+      <p>Every conversation is saved automatically. Switch between them, start fresh, or pick up where you left off.</p>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">New chat</span></div>
+      <div class="ditem-right"><div class="ditem-title">Start fresh</div><div class="ditem-body">Opens a blank conversation. The previous session is saved automatically before switching.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">History panel</span></div>
+      <div class="ditem-right"><div class="ditem-title">Browse past chats</div><div class="ditem-body">Click the sessions icon in the header to open the history panel. Tap any entry to resume that conversation.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Storage</span></div>
+      <div class="ditem-right"><div class="ditem-title">Where sessions live</div><div class="ditem-body">Sessions are saved as JSON files in <code>~/.pinn-sessions/</code>. You can read, back up, or delete them directly.</div></div>
+    </div>
+    <div class="docs-tip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>Sessions never leave your device. Nothing is synced to a server. Your conversation history is yours entirely.</p></div>
+  </div>
+
+  <div class="docs-panel" id="dp-settings">
+    <div class="docs-panel-header">
+      <h3>Settings</h3>
+      <p>Personalise Pinn to match your style and workflow. Open Settings from the gear icon in the header.</p>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Theme</span></div>
+      <div class="ditem-right"><div class="ditem-title">5 colour themes</div><div class="ditem-body">Choose from White, Dark, Black, Blue, or Pink. Switches instantly without restarting.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Font size</span></div>
+      <div class="ditem-right"><div class="ditem-title">Small · Medium · Large</div><div class="ditem-body">Three sizes to keep the interface comfortable at any display scaling.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Hotkey</span></div>
+      <div class="ditem-right"><div class="ditem-title">Custom shortcut</div><div class="ditem-body">Click the hotkey field and press your combo. Registers system-wide as soon as you save.</div></div>
+    </div>
+    <div class="docs-tip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>All settings are stored in <code>~/.pinn-settings.json</code> and persist across restarts automatically.</p></div>
+  </div>
+
+  <div class="docs-panel" id="dp-privacy">
+    <div class="docs-panel-header">
+      <h3>Privacy</h3>
+      <p>Pinn is designed from the ground up to leave no trace. What you type stays on your machine.</p>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">OS invisible</span></div>
+      <div class="ditem-right"><div class="ditem-title">No dock, no switcher</div><div class="ditem-body">macOS: no Dock icon, no Mission Control, no Cmd+Tab. Windows: no taskbar button, no Alt+Tab entry.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Screen share</span></div>
+      <div class="ditem-right"><div class="ditem-title">Invisible to recording</div><div class="ditem-body">Content protection is enabled at the OS level — Pinn's window does not appear in Zoom, Teams, Meet, OBS, or any screen recorder.</div></div>
+    </div>
+    <div class="ditem">
+      <div class="ditem-left"><span class="dkey">Local only</span></div>
+      <div class="ditem-right"><div class="ditem-title">Nothing leaves your device</div><div class="ditem-body">Chat history, memory, and settings are stored in plain JSON files on your machine. No account, no cloud sync, no telemetry.</div></div>
+    </div>
+    <div class="docs-tip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>The only outbound connection Pinn makes is to the AI API when you send a message.</p></div>
+  </div>
+
 </section>
 
 <footer>
@@ -871,7 +661,7 @@
   }
 
   /* Highlight active sidebar link on scroll */
-  const sections = ['hero','features','how','cta']
+  const sections = ['hero','features','how','docs']
   window.addEventListener('scroll', () => {
     let current = 'hero'
     sections.forEach(id => {
@@ -883,33 +673,18 @@
     })
   }, { passive: true })
 
-  /* ── Docs sidebar ── */
-  function openDocs(sec) {
-    document.getElementById('docs-overlay').classList.add('open')
-    document.getElementById('docs-sidebar').classList.add('open')
-    document.body.style.overflow = 'hidden'
-    closeSidebar()
-    if (sec) showSection(sec)
-  }
-  function closeDocs() {
-    document.getElementById('docs-overlay').classList.remove('open')
-    document.getElementById('docs-sidebar').classList.remove('open')
-    document.body.style.overflow = ''
-  }
-  function showSection(sec) {
-    document.querySelectorAll('.dsec').forEach(el => el.classList.remove('active'))
-    document.querySelectorAll('.dn').forEach(el => el.classList.remove('active'))
-    const content = document.getElementById('dsec-' + sec)
-    if (content) content.classList.add('active')
-    const nav = document.querySelector('.dn[data-sec="' + sec + '"]')
-    if (nav) nav.classList.add('active')
-    document.getElementById('docs-content').scrollTop = 0
-  }
-  document.querySelectorAll('.dn').forEach(btn => {
-    btn.addEventListener('click', () => showSection(btn.dataset.sec))
+  /* ── Docs tabs ── */
+  document.querySelectorAll('.docs-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.docs-tab').forEach(t => t.classList.remove('active'))
+      document.querySelectorAll('.docs-panel').forEach(p => p.classList.remove('active'))
+      tab.classList.add('active')
+      document.getElementById('dp-' + tab.dataset.panel).classList.add('active')
+    })
   })
+
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeDocs(); closeSidebar() }
+    if (e.key === 'Escape') closeSidebar()
   })
 </script>
 
