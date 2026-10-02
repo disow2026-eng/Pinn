@@ -3,7 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pinn — Hidden AI for Mac</title>
+
+  <!-- Primary -->
+  <title>Pinn — Hidden AI Desktop App for Mac & Windows</title>
+  <meta name="description" content="Pinn is a free, invisible AI assistant for macOS and Windows. Press a shortcut to summon it, ask anything, dismiss it. No dock icon. No trace. Screen-share safe." />
+  <meta name="keywords" content="hidden AI, desktop AI, AI assistant, macOS AI, Windows AI, invisible AI, Pinn, free AI app, stealth AI, always on top AI" />
+  <meta name="author" content="Pinn" />
+  <meta name="theme-color" content="#1a7a3c" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Pinn — Hidden AI Desktop App" />
+  <meta property="og:description" content="A free AI assistant that lives in your keyboard. Press a shortcut, get an answer, disappear. Invisible to screen recording. No account needed." />
+  <meta property="og:image" content="https://raw.githubusercontent.com/disow2026-eng/Pinn/main/landing/og-image.png" />
+  <meta property="og:url" content="https://disow2026-eng.github.io/Pinn/landing/" />
+  <meta property="og:site_name" content="Pinn" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Pinn — Hidden AI Desktop App" />
+  <meta name="twitter:description" content="Invisible AI on your desktop. Summon with a shortcut. Screen-share safe. Free." />
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/disow2026-eng/Pinn/main/landing/og-image.png" />
+
+  <!-- Favicon (inline SVG → data URI) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0a'/%3E%3Ctext x='6' y='24' font-family='Georgia,serif' font-size='22' font-weight='900' fill='%231a7a3c'%3E.%3C/text%3E%3Ctext x='13' y='24' font-family='Georgia,serif' font-size='16' font-weight='900' fill='white'%3Ep%3C/text%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230a0a0a'/%3E%3Ctext x='28' y='136' font-family='Georgia,serif' font-size='120' font-weight='900' fill='%231a7a3c'%3E.%3C/text%3E%3Ctext x='72' y='136' font-family='Georgia,serif' font-size='90' font-weight='900' fill='white'%3Ep%3C/text%3E%3C/svg%3E" />
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -30,41 +55,43 @@
     /* ── LEFT SIDEBAR ── */
     #sidebar {
       position: fixed; top: 56px; left: 0; bottom: 0; width: var(--sb);
-      background: #0a0a0a;
+      background: #fff;
       display: flex; flex-direction: column;
       z-index: 140; overflow-y: auto; scrollbar-width: none;
-      border-right: 1px solid #1a1a1a;
+      border-right: 1px solid var(--border);
       transition: transform .28s cubic-bezier(.4,0,.2,1);
     }
     #sidebar::-webkit-scrollbar { display: none; }
 
-    .sb-section { padding: 22px 16px 6px; }
+    .sb-section { padding: 22px 14px 6px; }
     .sb-label {
       font-size: 9px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase;
-      color: #444; margin-bottom: 4px; padding: 0 8px;
+      color: #bbb; margin-bottom: 4px; padding: 0 8px;
     }
     .sb-link {
       display: flex; align-items: center; gap: 10px;
       padding: 9px 12px; border-radius: 8px;
-      text-decoration: none; font-size: 13px; font-weight: 500; color: #888;
+      text-decoration: none; font-size: 13px; font-weight: 500; color: var(--muted);
       transition: all .14s; cursor: pointer; border: none; background: none;
       width: 100%; text-align: left;
     }
-    .sb-link:hover { background: #181818; color: #ccc; }
-    .sb-link.active { background: #1a1a1a; color: #fff; }
-    .sb-link svg { flex-shrink: 0; opacity: .6; }
-    .sb-link.active svg { opacity: 1; }
+    .sb-link:hover { background: var(--bg2); color: var(--text); }
+    .sb-link.active { background: #f0f9f4; color: var(--g); font-weight: 600; }
+    .sb-link svg { flex-shrink: 0; opacity: .5; }
+    .sb-link.active svg { opacity: 1; color: var(--g); }
+    .sb-link:hover svg { opacity: .75; }
 
-    .sb-divider { height: 1px; background: #1a1a1a; margin: 10px 16px; }
+    .sb-divider { height: 1px; background: var(--border); margin: 10px 14px; }
 
     .sb-download {
-      margin: 16px; border-radius: 10px;
-      background: var(--g); padding: 13px 14px;
+      margin: 14px; border-radius: 10px;
+      background: var(--g); padding: 12px 14px;
       text-decoration: none; display: flex; align-items: center; gap: 8px;
       font-size: 12.5px; font-weight: 700; color: #fff;
-      transition: opacity .15s;
+      box-shadow: 0 4px 14px rgba(26,122,60,.25);
+      transition: all .15s;
     }
-    .sb-download:hover { opacity: .85; }
+    .sb-download:hover { background: #1e8f46; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(26,122,60,.3); }
     .sb-bottom { margin-top: auto; padding-bottom: 20px; }
 
     /* ── MAIN CONTENT OFFSET ── */
