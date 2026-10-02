@@ -149,7 +149,18 @@
       letter-spacing: -.01em;
     }
 
-    .btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 80px; }
+    .btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 16px; }
+    .hero-dl-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 72px;
+      font-family: var(--font-body); flex-wrap: wrap; justify-content: center;
+    }
+    .hero-dl-link {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; font-weight: 500; color: var(--muted2);
+      text-decoration: none; transition: color .14s; letter-spacing: -.01em;
+    }
+    .hero-dl-link:hover { color: var(--text); }
+    .hero-dl-sep { color: var(--border); font-size: 14px; }
     .btn-primary {
       background: var(--g); color: #fff;
       font-family: var(--font-body); font-size: 14px; font-weight: 600; letter-spacing: -.01em;
@@ -454,8 +465,27 @@
   <p class="sub">Pinn runs silently in the background. Press a shortcut, get an answer, disappear. No dock. No trace.</p>
 
   <div class="btns">
-    <a href="#cta" class="btn-primary">Download — it's free</a>
+    <a href="dist/Pinn-mac-arm64.zip" download class="btn-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download — it's free
+    </a>
     <a href="#features" class="btn-ghost">See features</a>
+  </div>
+  <div class="hero-dl-row">
+    <a href="dist/Pinn-mac-arm64.zip" download class="hero-dl-link">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Apple Silicon
+    </a>
+    <span class="hero-dl-sep">·</span>
+    <a href="dist/Pinn-mac-x64.zip" download class="hero-dl-link">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Intel Mac
+    </a>
+    <span class="hero-dl-sep">·</span>
+    <a href="dist/Pinn-Setup-Windows-x64.exe" download class="hero-dl-link">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/></svg>
+      Windows x64
+    </a>
   </div>
 
   <div class="mockup">
