@@ -428,8 +428,9 @@
     </div>
 
     <script>
-      const { ipcRenderer } = require('electron')
+      const { ipcRenderer, shell } = require('electron')
       const https = require('https')
+      const http  = require('http')
       const fs    = require('fs')
       const path  = require('path')
       const os    = require('os')
@@ -728,7 +729,62 @@ STYLE:
         if (!silent) messagesEl.scrollTop = messagesEl.scrollHeight
       }
 
+      // ── Image memory: remember last screenshot for follow-ups ─────
+      let lastScreenshot = null
+
+      // ── Fetch webpage content ──────────────────────────────────────
+      function fetchWebpage(url) {
+        return new Promise((resolve) => {
+          const mod = url.startsWith('https') ? https : http
+          const req = mod.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0 Safari/537.36' }, timeout: 10000 }, res => {
+            if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+              return resolve(fetchWebpage(res.headers.location))
+            }
+            let data = ''
+            res.on('data', d => data += d)
+            res.on('end', () => {
+              const text = data
+                .replace(/<script[\s\S]*?<\/script>/gi, '')
+                .replace(/<style[\s\S]*?<\/style>/gi, '')
+                .replace(/<[^>]+>/g, ' ')
+                .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+                .replace(/\s{2,}/g, ' ').trim().slice(0, 12000)
+              resolve(text || 'Could not extract content.')
+            })
+          })
+          req.on('error', () => resolve(null))
+          req.on('timeout', () => { req.destroy(); resolve(null) })
+        })
+      }
+
+      // ── PDF export ─────────────────────────────────────────────────
+      async function exportPDF(content) {
+        const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+          <style>
+            body { font-family: -apple-system, Georgia, serif; max-width: 700px; margin: 40px auto; padding: 0 20px; color: #111; line-height: 1.7; }
+            h1 { font-size: 22px; margin-bottom: 4px; } .meta { color: #888; font-size: 13px; margin-bottom: 32px; }
+            .msg { margin-bottom: 18px; } .label { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+            .sent .label { color: #1a7a3c; } .recv .label { color: #666; }
+            .bubble { background: #f8f8f8; border-radius: 10px; padding: 12px 16px; font-size: 14px; white-space: pre-wrap; }
+            .sent .bubble { background: #e8f5ee; }
+          </style></head><body>
+          <h1>.pinn conversation</h1>
+          <p class="meta">Exported ${new Date().toLocaleString()}</p>
+          ${content}
+        </body></html>`
+        const savePath = await ipcRenderer.invoke('export-pdf', htmlContent)
+        if (savePath) {
+          addMsg('PDF saved to ' + savePath, 'recv')
+          shell.showItemInFolder(savePath)
+        } else {
+          addMsg('Could not save PDF.', 'recv')
+        }
+      }
+
       async function askAI(userMsg, screenshot = null) {
+        // Remember screenshot for follow-ups
+        if (screenshot) lastScreenshot = screenshot
+
         const userContent = screenshot
           ? [{ type: 'image_url', image_url: { url: screenshot } }, { type: 'text', text: userMsg || 'What do you see on my screen?' }]
           : userMsg
@@ -744,7 +800,6 @@ STYLE:
           }
           return m
         })
-        // Keep system prompt + last 10 messages to avoid context overflow
         const trimmed = [cleanHistory[0], ...cleanHistory.slice(1).slice(-10)]
         const body = JSON.stringify({ model: useModel, messages: trimmed, max_tokens: 8192 })
 
@@ -759,7 +814,6 @@ STYLE:
               res.on('end', () => {
                 try {
                   const json = JSON.parse(data)
-                  if (json.error) return reject(new Error(json.error.message))
                   if (json.error) return reject(new Error(json.error.message || JSON.stringify(json.error)))
                   const msg = json.choices[0].message
                   const raw = (msg.content && msg.content.trim()) ? msg.content.trim() : (msg.reasoning || '').trim()
@@ -780,20 +834,64 @@ STYLE:
         }
       }
 
-      function send() {
+      async function send() {
         const msg = inputEl.value.trim()
         if ((!msg && !pendingScreenshot) || sendBtn.disabled) return
-        const screenshot = pendingScreenshot
+
+        // ── PDF export ──────────────────────────────────────────────
+        if (/\b(make|create|export|save|generate)\b.*\bpdf\b/i.test(msg) || /\bpdf\b.*\b(this|chat|conversation)\b/i.test(msg)) {
+          inputEl.value = ''; inputEl.style.height = 'auto'
+          addMsg(msg, 'sent')
+          const msgs = document.querySelectorAll('#messages .msg-row')
+          let html = ''
+          msgs.forEach(row => {
+            const side = row.classList.contains('sent') ? 'sent' : 'recv'
+            const text = row.querySelector('.bubble')?.innerText || ''
+            const label = side === 'sent' ? 'You' : 'Pinn'
+            html += `<div class="msg ${side}"><div class="label">${label}</div><div class="bubble">${text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div></div>`
+          })
+          await exportPDF(html)
+          return
+        }
+
+        // ── URL fetch: read website content ────────────────────────
+        const urlMatch = msg.match(/https?:\/\/[^\s]+/)
+        let extraContext = ''
+        if (urlMatch) {
+          addMsg(msg, 'sent')
+          inputEl.value = ''; inputEl.style.height = 'auto'
+          sendBtn.disabled = true
+          typing.classList.add('on')
+          addMsg('Fetching ' + urlMatch[0] + ' ...', 'recv')
+          const pageText = await fetchWebpage(urlMatch[0])
+          // Remove the "Fetching..." message
+          const msgs2 = document.querySelectorAll('#messages .msg-row')
+          msgs2[msgs2.length - 1]?.remove()
+          if (pageText) {
+            extraContext = `\n\n[Content from ${urlMatch[0]}]:\n${pageText}\n\n`
+          } else {
+            addMsg("Couldn't load that page. I'll answer based on what I know.", 'recv')
+          }
+          typing.classList.remove('on')
+          const fullMsg = msg + extraContext
+          askAI(fullMsg, null).finally(() => { sendBtn.disabled = false })
+          return
+        }
+
+        // ── "Show me that image again" / image follow-up ───────────
+        const isImageFollowUp = lastScreenshot && /\b(image|screenshot|screen|photo|picture|that|it|same|again|show|see)\b/i.test(msg)
+
+        const screenshot = pendingScreenshot || (isImageFollowUp ? lastScreenshot : null)
         pendingScreenshot = null
         screenshotBtn.classList.remove('active')
         screenshotPreview.classList.remove('on')
         inputEl.value = ''; inputEl.style.height = 'auto'
         sendBtn.disabled = true
-        addMsg((msg || '(screenshot)') + (screenshot ? ' 📸' : ''), 'sent')
+        addMsg(msg + (screenshot && screenshot !== lastScreenshot ? ' 📸' : isImageFollowUp ? ' 🔁' : ''), 'sent')
         askAI(msg, screenshot).finally(() => { sendBtn.disabled = false })
       }
 
-      sendBtn.addEventListener('click', send)
+      sendBtn.addEventListener('click', () => send())
       inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } })
       inputEl.addEventListener('input', () => { inputEl.style.height = 'auto'; inputEl.style.height = Math.min(inputEl.scrollHeight, 80) + 'px' })
 

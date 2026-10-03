@@ -263,6 +263,26 @@ ipcMain.handle('take-screenshot', async () => {
   }
 })
 
+ipcMain.handle('export-pdf', async (_, htmlContent) => {
+  const fs2 = require('fs')
+  const os2 = require('os')
+  const pdfWin = new BrowserWindow({
+    width: 800, height: 600, show: false,
+    webPreferences: { nodeIntegration: false, contextIsolation: true }
+  })
+  try {
+    await pdfWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(htmlContent))
+    const pdfBuffer = await pdfWin.webContents.printToPDF({ printBackground: true, pageSize: 'A4' })
+    pdfWin.close()
+    const savePath = path.join(os2.homedir(), 'Downloads', `Pinn-${Date.now()}.pdf`)
+    fs2.writeFileSync(savePath, pdfBuffer)
+    return savePath
+  } catch (e) {
+    try { pdfWin.close() } catch {}
+    return null
+  }
+})
+
 ipcMain.on('notify', (_, { title, body }) => {
   if (Notification.isSupported()) {
     new Notification({ title, body }).show()
