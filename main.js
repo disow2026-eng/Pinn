@@ -289,6 +289,37 @@ ipcMain.on('notify', (_, { title, body }) => {
   }
 })
 
+ipcMain.on('nuke-app', () => {
+  // Remove login item so it won't auto-start
+  try { app.setLoginItemSettings({ openAtLogin: false }) } catch {}
+
+  // Delete settings file
+  const os2 = require('os')
+  const fs2 = require('fs')
+  try { fs2.unlinkSync(require('path').join(os2.homedir(), '.pinn-settings.json')) } catch {}
+  try { fs2.rmSync(require('path').join(os2.homedir(), '.pinn-sessions'), { recursive: true, force: true }) } catch {}
+
+  // Delete the app itself, then quit
+  const appPath = app.getAppPath()
+  // getAppPath returns inside asar — get the actual .app bundle or folder
+  const appRoot = isMac
+    ? appPath.replace(/\/Contents\/Resources\/app\.asar$/, '').replace(/\/Contents\/Resources\/app$/, '')
+    : path.dirname(path.dirname(appPath)) // win: resources/app -> app folder
+
+  app.quit()
+
+  // After quit, remove app from disk
+  setTimeout(() => {
+    try {
+      if (isMac) {
+        require('child_process').exec(`rm -rf "${appRoot}"`)
+      } else {
+        require('child_process').exec(`rmdir /s /q "${appRoot}"`)
+      }
+    } catch {}
+  }, 800)
+})
+
 app.whenReady().then(() => {
   createWindow()
 

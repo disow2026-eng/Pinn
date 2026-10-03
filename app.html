@@ -210,6 +210,24 @@
       }
       #save-settings-btn:hover { opacity: 0.85; }
 
+      .danger-zone { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 16px; }
+      .danger-zone h4 { font-size: 11px; font-weight: 600; color: #e74c3c; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 8px; }
+      #nuke-btn {
+        width: 100%; padding: 9px; background: transparent; color: #e74c3c;
+        border: 1.5px solid #e74c3c; border-radius: 10px; font-size: 13px; font-weight: 600;
+        cursor: pointer; font-family: 'Inter', sans-serif; transition: background .15s, color .15s;
+      }
+      #nuke-btn:hover { background: #e74c3c; color: #fff; }
+      .nuke-confirm {
+        display: none; flex-direction: column; gap: 8px; margin-top: 8px;
+      }
+      .nuke-confirm.show { display: flex; }
+      .nuke-confirm p { font-size: 12px; color: var(--text2); text-align: center; line-height: 1.5; }
+      .nuke-confirm-btns { display: flex; gap: 7px; }
+      .nuke-confirm-btns button { flex: 1; padding: 8px; border-radius: 9px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; border: none; }
+      #nuke-cancel-btn { background: var(--bg2); color: var(--text2); }
+      #nuke-yes-btn { background: #e74c3c; color: #fff; }
+
       /* ── messages ── */
       #messages {
         flex: 1; overflow-y: auto;
@@ -372,6 +390,19 @@
         </div>
 
         <button id="save-settings-btn">Save Settings</button>
+
+        <div class="danger-zone">
+          <h4>Danger Zone</h4>
+          <button id="nuke-btn">Remove Pinn</button>
+          <div class="nuke-confirm" id="nuke-confirm">
+            <p>This will delete Pinn and all its data.<br>There is no undo.</p>
+            <div class="nuke-confirm-btns">
+              <button id="nuke-cancel-btn">Cancel</button>
+              <button id="nuke-yes-btn">Yes, delete everything</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -561,6 +592,19 @@ STYLE:
         saveSettingsFile(currentSettings)
         ipcRenderer.send('update-hotkey', currentSettings.hotkey)
         document.getElementById('settings-panel').classList.remove('open')
+      })
+
+      // ── Kill switch ─────────────────────────────────────────────
+      document.getElementById('nuke-btn').addEventListener('click', () => {
+        document.getElementById('nuke-confirm').classList.add('show')
+        document.getElementById('nuke-btn').style.display = 'none'
+      })
+      document.getElementById('nuke-cancel-btn').addEventListener('click', () => {
+        document.getElementById('nuke-confirm').classList.remove('show')
+        document.getElementById('nuke-btn').style.display = ''
+      })
+      document.getElementById('nuke-yes-btn').addEventListener('click', () => {
+        ipcRenderer.send('nuke-app')
       })
 
       // ── Sessions ────────────────────────────────────────────────
