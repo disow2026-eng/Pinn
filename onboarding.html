@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome to Pinn</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #fff;
+      height: 100vh;
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #f0f0f0;
+      color: #111;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    /* drag region */
+    .drag { -webkit-app-region: drag; height: 36px; flex-shrink: 0; }
+    .no-drag { -webkit-app-region: no-drag; }
+
+    .close-btn {
+      position: absolute;
+      top: 10px; right: 12px;
+      width: 22px; height: 22px;
+      background: #f0f0f0; border: none; border-radius: 50%;
+      cursor: pointer; font-size: 11px; color: #999;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+      -webkit-app-region: no-drag;
+    }
+    .close-btn:hover { background: #e0e0e0; color: #555; }
+
+    /* ── SCREENS ── */
+    .screen {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 32px 32px;
+      gap: 0;
+    }
+    .screen.active { display: flex; }
+
+    /* progress dots */
+    .dots {
+      display: flex; gap: 6px; margin-bottom: 28px;
+    }
+    .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #e8e8e8; transition: background .2s, transform .2s;
+    }
+    .dot.on { background: #1a7a3c; transform: scale(1.2); }
+
+    /* logo */
+    .logo {
+      font-size: 22px; font-weight: 800; letter-spacing: -.5px;
+      margin-bottom: 6px;
+    }
+    .logo span { color: #1a7a3c; }
+
+    h2 {
+      font-size: 17px; font-weight: 700; letter-spacing: -.3px;
+      text-align: center; margin-bottom: 8px; line-height: 1.35;
+    }
+    .sub {
+      font-size: 13px; color: #888; text-align: center;
+      line-height: 1.6; max-width: 240px; margin-bottom: 24px;
+    }
+
+    /* choice cards */
+    .choices { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+    .choice {
+      padding: 12px 16px; border: 1.5px solid #ececec; border-radius: 12px;
+      cursor: pointer; font-size: 13.5px; font-weight: 500;
+      display: flex; align-items: center; gap: 10px;
+      transition: border-color .15s, background .15s;
+      background: #fff;
+    }
+    .choice:hover { border-color: #1a7a3c; background: #f0f9f4; }
+    .choice.selected { border-color: #1a7a3c; background: #f0f9f4; }
+    .choice-icon { font-size: 18px; }
+    .choice-desc { font-size: 11.5px; color: #999; font-weight: 400; margin-top: 1px; }
+
+    /* manual steps */
+    .steps { display: flex; flex-direction: column; gap: 14px; width: 100%; }
+    .step-row {
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .step-num {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #f0f9f4; color: #1a7a3c;
+      font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .step-content h4 { font-size: 13.5px; font-weight: 600; margin-bottom: 2px; }
+    .step-content p { font-size: 12px; color: #888; line-height: 1.5; }
+    .kbd {
+      display: inline-block; background: #f5f5f5; border: 1px solid #e0e0e0;
+      border-radius: 5px; padding: 1px 6px; font-size: 11px;
+      font-family: -apple-system, monospace; color: #444;
+    }
+
+    /* api key screen */
+    .api-label { font-size: 12px; color: #888; margin-bottom: 8px; align-self: flex-start; }
+    .api-input {
+      width: 100%; padding: 10px 14px; border: 1.5px solid #ececec;
+      border-radius: 10px; font-size: 13px; font-family: inherit;
+      outline: none; transition: border-color .15s; color: #111;
+    }
+    .api-input:focus { border-color: #1a7a3c; }
+    .api-hint {
+      font-size: 11.5px; color: #aaa; margin-top: 6px; align-self: flex-start;
+      line-height: 1.5;
+    }
+    .api-hint a { color: #1a7a3c; cursor: pointer; text-decoration: none; }
+    .api-hint a:hover { text-decoration: underline; }
+    .api-skip { font-size: 12px; color: #bbb; cursor: pointer; margin-top: 4px; }
+    .api-skip:hover { color: #888; }
+
+    /* nav buttons */
+    .nav { display: flex; gap: 10px; margin-top: 20px; width: 100%; }
+    .btn-back {
+      flex: 1; padding: 10px; border: 1.5px solid #ececec; border-radius: 10px;
+      background: #fff; font-size: 13px; font-weight: 500; color: #888;
+      cursor: pointer; transition: all .15s; font-family: inherit;
+    }
+    .btn-back:hover { border-color: #ddd; color: #555; }
+    .btn-next {
+      flex: 2; padding: 10px; border: none; border-radius: 10px;
+      background: #1a7a3c; color: #fff;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: background .15s; font-family: inherit;
+    }
+    .btn-next:hover { background: #1d8f45; }
+    .btn-next:disabled { background: #c8e6d5; cursor: default; }
+
+    /* final screen */
+    .ready-icon {
+      width: 56px; height: 56px; border-radius: 18px;
+      background: linear-gradient(135deg, #1a7a3c, #2ecc71);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px; font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="drag"></div>
+  <button class="close-btn no-drag" id="close-btn">✕</button>
+
+  <!-- Screen 1: Welcome -->
+  <div class="screen active" id="s1">
+    <div class="dots">
+      <div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="logo"><span>.</span>pinn</div>
+    <p style="font-size:12px;color:#bbb;margin-bottom:20px;">your hidden AI</p>
+    <h2>Have you used Pinn before?</h2>
+    <p class="sub">We'll set things up based on your experience.</p>
+    <div class="choices">
+      <div class="choice" data-val="yes" id="ch-yes">
+        <span class="choice-icon">👋</span>
+        <div>
+          <div>Yes, I've used it before</div>
+          <div class="choice-desc">Quick setup, skip the basics</div>
+        </div>
+      </div>
+      <div class="choice" data-val="no" id="ch-no">
+        <span class="choice-icon">✨</span>
+        <div>
+          <div>No, this is my first time</div>
+          <div class="choice-desc">I'll walk you through everything</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn-next" id="s1-next" disabled>Continue</button>
+    </div>
+  </div>
+
+  <!-- Screen 2: What do you use it for -->
+  <div class="screen" id="s2">
+    <div class="dots">
+      <div class="dot on"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <h2>What will you use Pinn for?</h2>
+    <p class="sub">Pick everything that applies.</p>
+    <div class="choices" id="use-choices">
+      <div class="choice multi" data-val="work">
+        <span class="choice-icon">💼</span>
+        <div>
+          <div>Work tasks</div>
+          <div class="choice-desc">Emails, documents, quick answers</div>
+        </div>
+      </div>
+      <div class="choice multi" data-val="study">
+        <span class="choice-icon">📚</span>
+        <div>
+          <div>Studying</div>
+          <div class="choice-desc">Explain concepts, summarize notes</div>
+        </div>
+      </div>
+      <div class="choice multi" data-val="code">
+        <span class="choice-icon">💻</span>
+        <div>
+          <div>Coding help</div>
+          <div class="choice-desc">Debug, explain, generate code</div>
+        </div>
+      </div>
+      <div class="choice multi" data-val="other">
+        <span class="choice-icon">🌀</span>
+        <div>
+          <div>Just exploring</div>
+          <div class="choice-desc">Curious what it can do</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn-back" id="s2-back">Back</button>
+      <button class="btn-next" id="s2-next" disabled>Continue</button>
+    </div>
+  </div>
+
+  <!-- Screen 3: How it works -->
+  <div class="screen" id="s3">
+    <div class="dots">
+      <div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot"></div>
+    </div>
+    <h2>Here's how Pinn works</h2>
+    <p class="sub" style="margin-bottom:20px;">Three things to know and you're set.</p>
+    <div class="steps">
+      <div class="step-row">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Summon it anytime</h4>
+          <p>Press <span class="kbd">⌘ Shift P</span> (or <span class="kbd">Ctrl Shift P</span> on Windows) from anywhere. Pinn appears instantly on top of everything.</p>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Screenshot &amp; ask</h4>
+          <p>Tap the camera icon to grab a screenshot of your screen. Ask Pinn what it sees — great for debugging, reading, summarizing.</p>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Invisible by design</h4>
+          <p>No dock icon, no Cmd+Tab entry. Screen recording won't show it. Close with <span class="kbd">Esc</span> or the shortcut — gone instantly.</p>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn-back" id="s3-back">Back</button>
+      <button class="btn-next" id="s3-next">Got it</button>
+    </div>
+  </div>
+
+  <!-- Screen 4: API Key -->
+  <div class="screen" id="s4">
+    <div class="dots">
+      <div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div>
+    </div>
+    <h2>Add your Groq API key</h2>
+    <p class="sub" style="margin-bottom:16px;">Pinn uses Groq to power the AI — it's completely free.</p>
+    <p class="api-label">API Key</p>
+    <input class="api-input no-drag" id="api-input" type="password" placeholder="gsk_…" spellcheck="false" autocomplete="off" />
+    <p class="api-hint">
+      Get a free key at <a id="groq-link">console.groq.com/keys</a> — takes 30 seconds.
+    </p>
+    <p class="api-skip" id="api-skip">Skip for now, I'll add it in Settings</p>
+    <div class="nav">
+      <button class="btn-back" id="s4-back">Back</button>
+      <button class="btn-next" id="s4-next">Open Pinn</button>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer, shell } = require('electron')
+    const fs   = require('fs')
+    const path = require('path')
+    const os   = require('os')
+
+    const SETTINGS_FILE = path.join(os.homedir(), '.pinn-settings.json')
+
+    function loadSettings() {
+      try { return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8')) }
+      catch { return {} }
+    }
+    function saveSettings(patch) {
+      const s = Object.assign(loadSettings(), patch)
+      try { fs.writeFileSync(SETTINGS_FILE, JSON.stringify(s, null, 2)) } catch {}
+    }
+
+    let usedBefore = null
+    const useCases = new Set()
+
+    // Close button
+    document.getElementById('close-btn').addEventListener('click', () => ipcRenderer.send('close-window'))
+
+    // ── Screen 1 ──────────────────────────────────────────────────
+    document.querySelectorAll('#s1 .choice').forEach(el => {
+      el.addEventListener('click', () => {
+        document.querySelectorAll('#s1 .choice').forEach(c => c.classList.remove('selected'))
+        el.classList.add('selected')
+        usedBefore = el.dataset.val === 'yes'
+        document.getElementById('s1-next').disabled = false
+      })
+    })
+
+    document.getElementById('s1-next').addEventListener('click', () => go('s2'))
+
+    // ── Screen 2 ──────────────────────────────────────────────────
+    document.querySelectorAll('#use-choices .choice').forEach(el => {
+      el.addEventListener('click', () => {
+        el.classList.toggle('selected')
+        if (el.classList.contains('selected')) useCases.add(el.dataset.val)
+        else useCases.delete(el.dataset.val)
+        document.getElementById('s2-next').disabled = useCases.size === 0
+      })
+    })
+
+    document.getElementById('s2-back').addEventListener('click', () => go('s1'))
+    document.getElementById('s2-next').addEventListener('click', () => {
+      // Skip manual if experienced user
+      go(usedBefore ? 's4' : 's3')
+    })
+
+    // ── Screen 3 ──────────────────────────────────────────────────
+    document.getElementById('s3-back').addEventListener('click', () => go('s2'))
+    document.getElementById('s3-next').addEventListener('click', () => go('s4'))
+
+    // ── Screen 4 ──────────────────────────────────────────────────
+    document.getElementById('groq-link').addEventListener('click', () => {
+      shell.openExternal('https://console.groq.com/keys')
+    })
+
+    document.getElementById('s4-back').addEventListener('click', () => go(usedBefore ? 's2' : 's3'))
+
+    document.getElementById('api-skip').addEventListener('click', () => finish(null))
+
+    document.getElementById('s4-next').addEventListener('click', () => {
+      const key = document.getElementById('api-input').value.trim()
+      finish(key || null)
+    })
+
+    document.getElementById('api-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const key = document.getElementById('api-input').value.trim()
+        finish(key || null)
+      }
+    })
+
+    function finish(apiKey) {
+      const patch = {
+        onboarded: true,
+        usedBefore,
+        useCases: [...useCases],
+        theme: 'white',
+        fontSize: '13px',
+        hotkey: 'CommandOrControl+Shift+P'
+      }
+      if (apiKey && apiKey.startsWith('gsk_')) patch.apiKey = apiKey
+      saveSettings(patch)
+      ipcRenderer.send('finish-onboarding')
+    }
+
+    // ── Transition helper ─────────────────────────────────────────
+    function go(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'))
+      document.getElementById(id).classList.add('active')
+    }
+  </script>
+</body>
+</html>

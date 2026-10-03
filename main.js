@@ -41,7 +41,13 @@ function createWindow() {
   }
 
   win = new BrowserWindow(opts)
-  win.loadFile('index.html')
+  // Check if user has completed onboarding
+  const fs = require('fs')
+  const os = require('os')
+  const settingsFile = require('path').join(os.homedir(), '.pinn-settings.json')
+  let onboarded = false
+  try { onboarded = JSON.parse(fs.readFileSync(settingsFile, 'utf8')).onboarded === true } catch {}
+  win.loadFile(onboarded ? 'app.html' : 'onboarding.html')
   win.setAlwaysOnTop(true, isMac ? 'floating' : undefined)
 
   if (isMac) {
@@ -52,6 +58,10 @@ function createWindow() {
 }
 
 ipcMain.on('close-window', () => win.hide())
+
+ipcMain.on('finish-onboarding', () => {
+  win.loadFile('app.html')
+})
 
 ipcMain.on('update-hotkey', (_, newKey) => {
   globalShortcut.unregisterAll()
