@@ -14,23 +14,11 @@
     "appId": "com.pinn.app",
     "productName": "Pinn",
     "copyright": "Copyright © 2026 Pinn",
-    "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
-      "icon": "assets/icon.ico",
-      "publisherName": "Pinn",
-      "requestedExecutionLevel": "asInvoker",
-      "signAndEditExecutable": false
-    },
-    "nsis": {
-      "oneClick": true,
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": false,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "Pinn"
-    },
     "mac": {
-      "target": [{ "target": "zip", "arch": ["arm64", "x64"] }],
+      "target": [
+        { "target": "zip", "arch": ["arm64"] },
+        { "target": "zip", "arch": ["x64"] }
+      ],
       "category": "public.app-category.productivity"
     },
     "files": [
