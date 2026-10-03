@@ -643,17 +643,27 @@ STYLE:
       screenshotBtn.addEventListener('click', async () => {
         screenshotBtn.disabled = true
 
+        // macOS: check screen recording permission first
+        if (isMac) {
+          const perm = await ipcRenderer.invoke('check-screen-permission')
+          if (perm !== 'granted') {
+            addMsg('Screen recording permission required. Opening System Settings — enable Pinn then try again.', 'recv')
+            ipcRenderer.send('open-screen-permissions')
+            screenshotBtn.disabled = false
+            return
+          }
+        }
+
         try {
           const dataUrl = await ipcRenderer.invoke('take-screenshot')
           if (dataUrl) {
-            // Resize image to max 1280px wide before storing — keeps it under API limits
             const resized = await resizeImage(dataUrl, 1280)
             pendingScreenshot = resized
             document.getElementById('screenshot-thumb').src = resized
             screenshotBtn.classList.add('active')
             screenshotPreview.classList.add('on')
           }
-        } catch (e) { addMsg('Could not capture screenshot — ' + e.message, 'recv') }
+        } catch (e) { addMsg('Screenshot failed — ' + e.message, 'recv') }
         screenshotBtn.disabled = false
       })
 
@@ -737,7 +747,7 @@ STYLE:
         })
         // Keep system prompt + last 10 messages to avoid context overflow
         const trimmed = [cleanHistory[0], ...cleanHistory.slice(1).slice(-10)]
-        const body = JSON.stringify({ model: useModel, messages: trimmed, max_tokens: 1024 })
+        const body = JSON.stringify({ model: useModel, messages: trimmed, max_tokens: 8192 })
 
         try {
           const reply = await new Promise((resolve, reject) => {
@@ -751,9 +761,12 @@ STYLE:
                 try {
                   const json = JSON.parse(data)
                   if (json.error) return reject(new Error(json.error.message))
-                  const raw = json.choices[0].message.content.trim()
+                  const msg = json.choices[0].message
+                  // Reasoning models put final answer in content; fallback to reasoning if content is empty
+                  const raw = (msg.content && msg.content.trim()) ? msg.content.trim() : (msg.reasoning || '').trim()
+                  if (!raw) return reject(new Error('Empty response'))
                   resolve(raw.replace(/\*+/g, '').replace(/_{2,}/g, '').replace(/#{1,6}\s/g, ''))
-                } catch { reject(new Error('Bad response')) }
+                } catch (e) { reject(new Error('Bad response: ' + e.message)) }
               })
             })
             req.on('error', reject); req.write(body); req.end()

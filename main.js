@@ -186,38 +186,79 @@ ipcMain.handle('take-screenshot', async () => {
     })
 
   } else {
-    // macOS: watch Desktop for a new file — user uses Cmd+Shift+4
-    const fs2 = require('fs')
-    const os2 = require('os')
-    const desktopDir = path.join(os2.homedir(), 'Desktop')
-    const before = new Set(fs2.readdirSync(desktopDir))
-
+    // macOS: use desktopCapturer + overlay selector (same as Windows)
     win.hide()
-    win.setContentProtection(false)
-    win.webContents.send('screenshot-instructions')
+    try { win.setContentProtection(false) } catch {}
 
-    const dataUrl = await new Promise(resolve => {
-      const timeout = setTimeout(() => { watcher.close(); resolve(null) }, 30000)
+    await new Promise(r => setTimeout(r, 350))
 
-      const watcher = fs2.watch(desktopDir, (event, filename) => {
-        if (!filename) return
-        if (!/\.(png|jpg|jpeg)$/i.test(filename)) return
-        if (before.has(filename)) return
-        const fullPath = path.join(desktopDir, filename)
-        setTimeout(() => {
-          try {
-            const buf = fs2.readFileSync(fullPath)
-            clearTimeout(timeout)
-            watcher.close()
-            resolve('data:image/png;base64,' + buf.toString('base64'))
-          } catch {}
-        }, 400)
+    const display = screen.getPrimaryDisplay()
+    const { width, height } = display.size
+    const scale = display.scaleFactor || 1
+
+    let sources
+    try {
+      sources = await desktopCapturer.getSources({
+        types: ['screen'],
+        thumbnailSize: { width: Math.round(width * scale), height: Math.round(height * scale) }
+      })
+    } catch (e) {
+      try { win.setContentProtection(true) } catch {}
+      focusAndShow()
+      return null
+    }
+
+    if (!sources.length) {
+      try { win.setContentProtection(true) } catch {}
+      focusAndShow()
+      return null
+    }
+
+    const fullDataUrl = sources[0].thumbnail.toDataURL()
+
+    return new Promise(resolve => {
+      selectorWin = new BrowserWindow({
+        x: 0, y: 0,
+        width, height,
+        frame: false,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        transparent: true,
+        resizable: false,
+        movable: false,
+        type: 'panel',
+        webPreferences: { nodeIntegration: true, contextIsolation: false }
+      })
+      selectorWin.loadFile('selector.html')
+      selectorWin.setAlwaysOnTop(true, 'screen-saver')
+      selectorWin.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+
+      selectorWin.webContents.once('did-finish-load', () => {
+        selectorWin.show()
+        selectorWin.focus()
+        selectorWin.webContents.send('screenshot', fullDataUrl)
+      })
+
+      ipcMain.once('selection-done', (_, { x, y, w, h }) => {
+        if (selectorWin) { selectorWin.close(); selectorWin = null }
+        const img = nativeImage.createFromDataURL(fullDataUrl)
+        const cropped = img.crop({
+          x: Math.round(x * scale), y: Math.round(y * scale),
+          width: Math.max(1, Math.round(w * scale)),
+          height: Math.max(1, Math.round(h * scale))
+        })
+        try { win.setContentProtection(true) } catch {}
+        focusAndShow()
+        resolve(cropped.toDataURL())
+      })
+
+      ipcMain.once('selection-cancel', () => {
+        if (selectorWin) { selectorWin.close(); selectorWin = null }
+        try { win.setContentProtection(true) } catch {}
+        focusAndShow()
+        resolve(null)
       })
     })
-
-    win.setContentProtection(true)
-    focusAndShow()
-    return dataUrl
   }
 })
 
