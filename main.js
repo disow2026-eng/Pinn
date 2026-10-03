@@ -40,13 +40,19 @@ function createWindow() {
     opts.backgroundMaterial = 'acrylic' // Windows 11 blur-behind effect
   }
 
-  win = new BrowserWindow(opts)
-  // Check if user has completed onboarding
   const fs = require('fs')
   const os = require('os')
   const settingsFile = require('path').join(os.homedir(), '.pinn-settings.json')
   let onboarded = false
   try { onboarded = JSON.parse(fs.readFileSync(settingsFile, 'utf8')).onboarded === true } catch {}
+
+  if (!onboarded) {
+    opts.width = 360
+    opts.height = 520
+    opts.minHeight = 480
+  }
+
+  win = new BrowserWindow(opts)
   win.loadFile(onboarded ? 'app.html' : 'onboarding.html')
   win.setAlwaysOnTop(true, isMac ? 'floating' : undefined)
 
@@ -60,6 +66,8 @@ function createWindow() {
 ipcMain.on('close-window', () => win.hide())
 
 ipcMain.on('finish-onboarding', () => {
+  win.setSize(340, 360)
+  win.setMinimumSize(280, 300)
   win.loadFile('app.html')
 })
 
