@@ -371,6 +371,12 @@
           <p class="hotkey-hint">Click the box, then press your shortcut keys</p>
         </div>
 
+        <div class="setting-section">
+          <h4>Groq API Key</h4>
+          <input id="apikey-input" type="password" placeholder="gsk_…  (get one free at groq.com)" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--input-bg);color:var(--text);font-size:12px;font-family:inherit;outline:none;" />
+          <p class="hotkey-hint">Required to use AI. <span id="apikey-link" style="color:var(--accent);cursor:pointer;text-decoration:underline;">Get a free key at groq.com</span></p>
+        </div>
+
         <button id="save-settings-btn">Save Settings</button>
       </div>
     </div>
@@ -397,7 +403,7 @@
     <div id="messages">
       <div class="divider">Today</div>
       <div class="msg-row recv">
-        <div class="bubble">Hey! I'm Pinn 👋 What's on your mind?</div>
+        <div class="bubble" id="welcome-msg">Hey! I'm Pinn 👋 What's on your mind?</div>
         <div class="msg-time">just now</div>
       </div>
       <div id="typing">
@@ -461,11 +467,17 @@
       })
 
       const { GROQ_API_KEY } = require('./config.js')
-      const API_KEY      = GROQ_API_KEY
       const MODEL        = 'openai/gpt-oss-20b'
       const VISION_MODEL = 'qwen/qwen3.8-27b'
       const SESSIONS_DIR = path.join(os.homedir(), '.pinn-sessions')
       const SETTINGS_FILE = path.join(os.homedir(), '.pinn-settings.json')
+
+      // API key: prefer saved key in settings over config.js placeholder
+      let API_KEY = GROQ_API_KEY
+      try {
+        const _s = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'))
+        if (_s.apiKey && _s.apiKey.trim().startsWith('gsk_')) API_KEY = _s.apiKey.trim()
+      } catch {}
       const MAX_SAVED    = 40
 
       const SYSTEM_PROMPT = `You are Pinn, a highly intelligent AI assistant inside a hidden desktop app. You reason carefully before answering and always give correct, well-thought-out responses.
@@ -484,7 +496,7 @@ STYLE:
       // ── Settings ────────────────────────────────────────────────
       function loadSettings() {
         try { return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8')) }
-        catch { return { theme: 'white', fontSize: '13px', hotkey: 'CommandOrControl+Shift+P' } }
+        catch { return { theme: 'white', fontSize: '13px', hotkey: 'CommandOrControl+Shift+P', apiKey: '' } }
       }
       function saveSettingsFile(s) {
         try { fs.writeFileSync(SETTINGS_FILE, JSON.stringify(s, null, 2)) } catch {}
@@ -505,9 +517,16 @@ STYLE:
           el.classList.toggle('active', el.dataset.size === s.fontSize)
         })
         document.getElementById('hotkey-input').value = s.hotkey
+        document.getElementById('apikey-input').value = s.apiKey || ''
       }
 
       applySettings(currentSettings)
+
+      // Show setup prompt if no API key is configured
+      if (!API_KEY || !API_KEY.startsWith('gsk_')) {
+        const wm = document.getElementById('welcome-msg')
+        if (wm) wm.textContent = 'Hey! I\'m Pinn 👋 To get started, open Settings (⚙ top right) and paste your Groq API key. It\'s free at groq.com/keys'
+      }
 
       // Settings panel
       document.getElementById('settings-btn').addEventListener('click', () => {
@@ -558,9 +577,15 @@ STYLE:
       })
 
       document.getElementById('save-settings-btn').addEventListener('click', () => {
+        const keyVal = document.getElementById('apikey-input').value.trim()
+        if (keyVal) { currentSettings.apiKey = keyVal; API_KEY = keyVal }
         saveSettingsFile(currentSettings)
         ipcRenderer.send('update-hotkey', currentSettings.hotkey)
         document.getElementById('settings-panel').classList.remove('open')
+      })
+
+      document.getElementById('apikey-link').addEventListener('click', () => {
+        require('electron').shell.openExternal('https://console.groq.com/keys')
       })
 
       // ── Sessions ────────────────────────────────────────────────
@@ -719,6 +744,10 @@ STYLE:
       }
 
       async function askAI(userMsg, screenshot = null) {
+        if (!API_KEY || !API_KEY.startsWith('gsk_')) {
+          addMsg('No API key set. Open Settings (⚙) and paste your Groq API key to get started. Get one free at groq.com/keys', 'recv')
+          return
+        }
         const userContent = screenshot
           ? [{ type: 'image_url', image_url: { url: screenshot } }, { type: 'text', text: userMsg || 'What do you see on my screen?' }]
           : userMsg
