@@ -320,6 +320,26 @@ ipcMain.on('nuke-app', () => {
   }, 800)
 })
 
+// macOS: auto-hide when native screenshot tool (Cmd+Shift+3/4/5) is active
+// setContentProtection blocks screen recording but native screencaptureui still sees the window
+if (isMac) {
+  const { exec } = require('child_process')
+  let hiddenForScreenshot = false
+
+  setInterval(() => {
+    exec('pgrep -x screencaptureui', (err, stdout) => {
+      const active = !!stdout.trim()
+      if (active && !hiddenForScreenshot && win && win.isVisible()) {
+        hiddenForScreenshot = true
+        win.hide()
+      } else if (!active && hiddenForScreenshot) {
+        hiddenForScreenshot = false
+        // stay hidden — user brings it back with hotkey as normal
+      }
+    })
+  }, 120)
+}
+
 app.whenReady().then(() => {
   createWindow()
 
