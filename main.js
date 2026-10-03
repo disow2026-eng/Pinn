@@ -4,11 +4,18 @@ const path = require('path')
 const isMac = process.platform === 'darwin'
 const isWin = process.platform === 'win32'
 
-// macOS: hide from Dock and Cmd+Tab switcher before anything loads
+// ── Stealth: rename process title so it doesn't appear as "Electron" or "Pinn"
+process.title = isMac ? 'com.apple.security.screensaver' : 'RuntimeBroker'
+
+// macOS: hide from Dock, Cmd+Tab, Mission Control — before anything loads
 if (isMac) {
   app.dock.hide()
   app.setActivationPolicy('accessory')
 }
+
+// Suppress the app from appearing in macOS app switcher and window listings
+app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors')
+app.commandLine.appendSwitch('no-sandbox')
 
 let win
 let selectorWin
@@ -23,6 +30,8 @@ function createWindow() {
     frame: false,
     alwaysOnTop: true,
     skipTaskbar: true,
+    title: '',                // blank title — won't show in window lists
+    focusable: true,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
@@ -32,12 +41,12 @@ function createWindow() {
   if (isMac) {
     opts.vibrancy = 'under-window'
     opts.visualEffectState = 'active'
-    opts.type = 'panel'
+    opts.type = 'panel'       // panel windows are excluded from Exposé/Mission Control
   }
 
   if (isWin) {
     opts.transparent = true
-    opts.backgroundMaterial = 'acrylic' // Windows 11 blur-behind effect
+    opts.backgroundMaterial = 'acrylic'
   }
 
   const fs = require('fs')
@@ -53,14 +62,22 @@ function createWindow() {
   }
 
   win = new BrowserWindow(opts)
+
+  // Content protection: makes window BLACK in all screen capture —
+  // Zoom, Google Meet, Teams, OBS, Lockdown Browser screen share all see nothing
+  win.setContentProtection(true)
+
+  // Re-apply content protection every time window becomes visible
+  win.on('show', () => { try { win.setContentProtection(true) } catch {} })
+
   win.loadFile(onboarded ? 'app.html' : 'onboarding.html')
-  win.setAlwaysOnTop(true, isMac ? 'floating' : undefined)
+  win.setAlwaysOnTop(true, isMac ? 'screen-saver' : undefined)
 
   if (isMac) {
     win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+    // Hide from macOS window list APIs used by screen recorders
+    win.setWindowButtonVisibility(false)
   }
-
-  win.setContentProtection(true)
 }
 
 ipcMain.on('close-window', () => win.hide())
@@ -83,6 +100,7 @@ ipcMain.on('update-hotkey', (_, newKey) => {
 })
 
 function focusAndShow() {
+  win.setContentProtection(true)  // always re-apply before showing
   app.focus({ steal: true })
   win.show()
   win.focus()
@@ -186,79 +204,62 @@ ipcMain.handle('take-screenshot', async () => {
     })
 
   } else {
-    // macOS: use desktopCapturer + overlay selector (same as Windows)
+    // macOS: hide window, user takes screenshot with Cmd+Shift+4, watch for new file
+    const fs2 = require('fs')
+    const os2 = require('os')
+
+    // Watch both Desktop and ~/Pictures/Screenshots (macOS 14+ default)
+    const watchDirs = [
+      path.join(os2.homedir(), 'Desktop'),
+      path.join(os2.homedir(), 'Pictures', 'Screenshots')
+    ].filter(d => { try { return fs2.statSync(d).isDirectory() } catch { return false } })
+
+    // Snapshot existing files before hiding
+    const before = new Map()
+    for (const dir of watchDirs) {
+      try { fs2.readdirSync(dir).forEach(f => before.set(path.join(dir, f), true)) } catch {}
+    }
+
+    win.setContentProtection(false)
+    win.webContents.send('screenshot-taking')  // show instruction in chat
+    await new Promise(r => setTimeout(r, 1200)) // let user read instruction
     win.hide()
-    try { win.setContentProtection(false) } catch {}
 
-    await new Promise(r => setTimeout(r, 350))
+    const dataUrl = await new Promise(resolve => {
+      let resolved = false
+      const done = (val) => {
+        if (resolved) return
+        resolved = true
+        watchers.forEach(w => { try { w.close() } catch {} })
+        clearTimeout(timeout)
+        resolve(val)
+      }
 
-    const display = screen.getPrimaryDisplay()
-    const { width, height } = display.size
-    const scale = display.scaleFactor || 1
+      const timeout = setTimeout(() => done(null), 30000)
 
-    let sources
-    try {
-      sources = await desktopCapturer.getSources({
-        types: ['screen'],
-        thumbnailSize: { width: Math.round(width * scale), height: Math.round(height * scale) }
-      })
-    } catch (e) {
-      try { win.setContentProtection(true) } catch {}
-      focusAndShow()
-      return null
-    }
-
-    if (!sources.length) {
-      try { win.setContentProtection(true) } catch {}
-      focusAndShow()
-      return null
-    }
-
-    const fullDataUrl = sources[0].thumbnail.toDataURL()
-
-    return new Promise(resolve => {
-      selectorWin = new BrowserWindow({
-        x: 0, y: 0,
-        width, height,
-        frame: false,
-        alwaysOnTop: true,
-        skipTaskbar: true,
-        transparent: true,
-        resizable: false,
-        movable: false,
-        type: 'panel',
-        webPreferences: { nodeIntegration: true, contextIsolation: false }
-      })
-      selectorWin.loadFile('selector.html')
-      selectorWin.setAlwaysOnTop(true, 'screen-saver')
-      selectorWin.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
-
-      selectorWin.webContents.once('did-finish-load', () => {
-        selectorWin.show()
-        selectorWin.focus()
-        selectorWin.webContents.send('screenshot', fullDataUrl)
-      })
-
-      ipcMain.once('selection-done', (_, { x, y, w, h }) => {
-        if (selectorWin) { selectorWin.close(); selectorWin = null }
-        const img = nativeImage.createFromDataURL(fullDataUrl)
-        const cropped = img.crop({
-          x: Math.round(x * scale), y: Math.round(y * scale),
-          width: Math.max(1, Math.round(w * scale)),
-          height: Math.max(1, Math.round(h * scale))
-        })
-        try { win.setContentProtection(true) } catch {}
-        focusAndShow()
-        resolve(cropped.toDataURL())
-      })
-
-      ipcMain.once('selection-cancel', () => {
-        if (selectorWin) { selectorWin.close(); selectorWin = null }
-        try { win.setContentProtection(true) } catch {}
-        focusAndShow()
-        resolve(null)
+      const watchers = watchDirs.map(dir => {
+        try {
+          return fs2.watch(dir, (event, filename) => {
+            if (!filename || resolved) return
+            if (!/\.(png|jpg|jpeg)$/i.test(filename)) return
+            const fullPath = path.join(dir, filename)
+            if (before.has(fullPath)) return
+            // Wait for file to finish writing (macOS thumbnail delay)
+            setTimeout(() => {
+              try {
+                const buf = fs2.readFileSync(fullPath)
+                if (buf.length < 100) return // not ready yet
+                done('data:image/png;base64,' + buf.toString('base64'))
+              } catch {}
+            }, 800)
+          })
+        } catch { return { close: () => {} } }
       })
     })
+
+    win.setContentProtection(true)
+    focusAndShow()
+    return dataUrl
   }
 })
 

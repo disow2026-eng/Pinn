@@ -446,9 +446,8 @@
       }
 
       document.getElementById('close-btn').addEventListener('click', () => ipcRenderer.send('close-window'))
-      ipcRenderer.on('screenshot-instructions', () => {
-        // macOS only — Windows uses the selector window instead
-        addMsg('Press Cmd+Shift+4, select your area, then Pinn will grab it automatically.', 'recv')
+      ipcRenderer.on('screenshot-taking', () => {
+        addMsg('Taking screenshot — press ⌘⇧4, drag to select your area. Pinn will hide and come back automatically.', 'recv')
       })
 
       ipcRenderer.on('focus-input', () => {
@@ -505,7 +504,6 @@ STYLE:
           el.classList.toggle('active', el.dataset.size === s.fontSize)
         })
         document.getElementById('hotkey-input').value = s.hotkey
-        document.getElementById('apikey-input').value = s.apiKey || ''
       }
 
       applySettings(currentSettings)
@@ -643,25 +641,19 @@ STYLE:
       screenshotBtn.addEventListener('click', async () => {
         screenshotBtn.disabled = true
 
-        // macOS: check screen recording permission first
-        if (isMac) {
-          const perm = await ipcRenderer.invoke('check-screen-permission')
-          if (perm !== 'granted') {
-            addMsg('Screen recording permission required. Opening System Settings — enable Pinn then try again.', 'recv')
-            ipcRenderer.send('open-screen-permissions')
-            screenshotBtn.disabled = false
-            return
-          }
-        }
-
         try {
           const dataUrl = await ipcRenderer.invoke('take-screenshot')
           if (dataUrl) {
-            const resized = await resizeImage(dataUrl, 1280)
-            pendingScreenshot = resized
+            const resized = await resizeImage(dataUrl, 512)
+            // Show thumbnail in chat and auto-send to AI
+            addMsg('📸', 'sent')
             document.getElementById('screenshot-thumb').src = resized
-            screenshotBtn.classList.add('active')
             screenshotPreview.classList.add('on')
+            sendBtn.disabled = true
+            askAI('What do you see on my screen?', resized).finally(() => {
+              sendBtn.disabled = false
+              screenshotPreview.classList.remove('on')
+            })
           }
         } catch (e) { addMsg('Screenshot failed — ' + e.message, 'recv') }
         screenshotBtn.disabled = false
@@ -708,7 +700,14 @@ STYLE:
             const canvas = document.createElement('canvas')
             canvas.width = w; canvas.height = h
             canvas.getContext('2d').drawImage(img, 0, 0, w, h)
-            resolve(canvas.toDataURL('image/jpeg', 0.75))
+            // Start at quality 0.65, reduce until base64 is under 400KB
+            let quality = 0.65
+            let result = canvas.toDataURL('image/jpeg', quality)
+            while (result.length > 550_000 && quality > 0.15) {
+              quality -= 0.1
+              result = canvas.toDataURL('image/jpeg', quality)
+            }
+            resolve(result)
           }
           img.src = dataUrl
         })
@@ -753,7 +752,7 @@ STYLE:
           const reply = await new Promise((resolve, reject) => {
             const req = https.request({
               hostname: 'api.groq.com', path: '/openai/v1/chat/completions', method: 'POST',
-              headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+              headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body, 'utf8') }
             }, res => {
               let data = ''
               res.on('data', d => data += d)
@@ -761,10 +760,10 @@ STYLE:
                 try {
                   const json = JSON.parse(data)
                   if (json.error) return reject(new Error(json.error.message))
+                  if (json.error) return reject(new Error(json.error.message || JSON.stringify(json.error)))
                   const msg = json.choices[0].message
-                  // Reasoning models put final answer in content; fallback to reasoning if content is empty
                   const raw = (msg.content && msg.content.trim()) ? msg.content.trim() : (msg.reasoning || '').trim()
-                  if (!raw) return reject(new Error('Empty response'))
+                  if (!raw) return reject(new Error('Empty response from model'))
                   resolve(raw.replace(/\*+/g, '').replace(/_{2,}/g, '').replace(/#{1,6}\s/g, ''))
                 } catch (e) { reject(new Error('Bad response: ' + e.message)) }
               })
