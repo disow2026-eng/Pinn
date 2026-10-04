@@ -7,6 +7,22 @@ const isWin = process.platform === 'win32'
 // ── Stealth: rename process title so it doesn't appear as "Electron" or "Pinn"
 process.title = isMac ? 'com.apple.security.screensaver' : 'RuntimeBroker'
 
+// ── Single instance lock — kills any existing instance before taking over
+const gotLock = app.requestSingleInstanceLock()
+if (!gotLock) {
+  // Another instance is already running — quit this one immediately
+  app.quit()
+  process.exit(0)
+}
+
+// If a second instance tries to launch, just focus the existing window
+app.on('second-instance', () => {
+  if (win) {
+    if (win.isVisible()) win.focus()
+    else focusAndShow()
+  }
+})
+
 // macOS: hide from Dock, Cmd+Tab, Mission Control — before anything loads
 if (isMac) {
   app.dock.hide()
