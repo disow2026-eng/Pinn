@@ -299,7 +299,7 @@ ipcMain.on('nuke-app', () => {
   // Delete settings file
   const os2 = require('os')
   const fs2 = require('fs')
-  try { fs2.unlinkSync(require('path').join(os2.homedir(), '.pinn-settings.json')) } catch {}
+  try { fs2.rmSync(require('path').join(os2.homedir(), '.pinn-settings.json'), { force: true }) } catch {}
   try { fs2.rmSync(require('path').join(os2.homedir(), '.pinn-sessions'), { recursive: true, force: true }) } catch {}
 
   // Delete the app itself, then quit
