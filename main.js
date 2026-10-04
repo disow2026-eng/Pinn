@@ -56,6 +56,11 @@ function createWindow() {
     }
   }
 
+  if (isMac) {
+    opts.vibrancy = 'under-window'
+    opts.visualEffectState = 'active'
+  }
+
   if (isWin) {
     opts.backgroundMaterial = 'acrylic'
   }
