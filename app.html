@@ -679,7 +679,6 @@ STYLE:
       function closeSessionsPanel() { sessionsPanel.classList.remove('open') }
 
       // ── Screenshot ─────────────────────────────────────────────
-      let pendingScreenshot = null
       const screenshotBtn     = document.getElementById('screenshot-btn')
       const screenshotPreview = document.getElementById('screenshot-preview')
 
@@ -690,14 +689,11 @@ STYLE:
           const dataUrl = await ipcRenderer.invoke('take-screenshot')
           if (dataUrl) {
             const resized = await resizeImage(dataUrl, 512)
-            // Show thumbnail in chat and auto-send to AI
-            addMsg('📸', 'sent')
-            document.getElementById('screenshot-thumb').src = resized
-            screenshotPreview.classList.add('on')
+            addMsg('📸 Analyzing screenshot…', 'sent')
             sendBtn.disabled = true
+            screenshotPreview.classList.remove('on')
             askAI('What do you see on my screen?', resized).finally(() => {
               sendBtn.disabled = false
-              screenshotPreview.classList.remove('on')
             })
           }
         } catch (e) { addMsg('Screenshot failed — ' + e.message, 'recv') }
@@ -705,8 +701,6 @@ STYLE:
       })
 
       document.getElementById('clear-screenshot').addEventListener('click', () => {
-        pendingScreenshot = null
-        screenshotBtn.classList.remove('active')
         screenshotPreview.classList.remove('on')
       })
 
@@ -727,10 +721,21 @@ STYLE:
       }
 
       function renderMessages() {
-        messagesEl.querySelectorAll('.msg-row').forEach(r => r.remove())
-        history.slice(1).forEach(m => {
-          if (m.role === 'user' || m.role === 'assistant') addMsg(m.content, m.role === 'user' ? 'sent' : 'recv', true)
-        })
+        // Clear all message rows AND dividers to prevent duplicates
+        messagesEl.querySelectorAll('.msg-row, .divider').forEach(r => r.remove())
+        const msgs = history.slice(1).filter(m => m.role === 'user' || m.role === 'assistant')
+        if (msgs.length === 0) {
+          // Re-add welcome message for empty chats
+          const div = document.createElement('div'); div.className = 'divider'; div.textContent = 'Today'
+          messagesEl.insertBefore(div, typing)
+          const row = document.createElement('div'); row.className = 'msg-row recv'
+          row.innerHTML = `<div class="bubble">Hey! I'm Pinn 👋 What's on your mind?</div><div class="msg-time">just now</div>`
+          messagesEl.insertBefore(row, typing)
+        } else {
+          const div = document.createElement('div'); div.className = 'divider'; div.textContent = 'Today'
+          messagesEl.insertBefore(div, typing)
+          msgs.forEach(m => addMsg(m.content, m.role === 'user' ? 'sent' : 'recv', true))
+        }
         messagesEl.scrollTop = messagesEl.scrollHeight
       }
       renderMessages()
@@ -777,15 +782,19 @@ STYLE:
       let lastScreenshot = null
 
       // ── Fetch webpage content ──────────────────────────────────────
-      function fetchWebpage(url) {
+      function fetchWebpage(url, redirects = 0) {
+        if (redirects > 5) return Promise.resolve(null)
         return new Promise((resolve) => {
-          const mod = url.startsWith('https') ? https : http
+          let mod
+          try { mod = new URL(url).protocol === 'https:' ? https : http } catch { return resolve(null) }
           const req = mod.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0 Safari/537.36' }, timeout: 10000 }, res => {
             if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-              return resolve(fetchWebpage(res.headers.location))
+              res.resume()
+              const next = res.headers.location.startsWith('http') ? res.headers.location : new URL(res.headers.location, url).href
+              return resolve(fetchWebpage(next, redirects + 1))
             }
             let data = ''
-            res.on('data', d => data += d)
+            res.on('data', d => { data += d; if (data.length > 200000) req.destroy() })
             res.on('end', () => {
               const text = data
                 .replace(/<script[\s\S]*?<\/script>/gi, '')
@@ -880,19 +889,21 @@ STYLE:
 
       async function send() {
         const msg = inputEl.value.trim()
-        if ((!msg && !pendingScreenshot) || sendBtn.disabled) return
+        if (!msg || sendBtn.disabled) return
 
         // ── PDF export ──────────────────────────────────────────────
         if (/\b(make|create|export|save|generate)\b.*\bpdf\b/i.test(msg) || /\bpdf\b.*\b(this|chat|conversation)\b/i.test(msg)) {
           inputEl.value = ''; inputEl.style.height = 'auto'
           addMsg(msg, 'sent')
-          const msgs = document.querySelectorAll('#messages .msg-row')
+          // Build PDF from history (reliable source of truth, not DOM)
           let html = ''
-          msgs.forEach(row => {
-            const side = row.classList.contains('sent') ? 'sent' : 'recv'
-            const text = row.querySelector('.bubble')?.innerText || ''
+          history.slice(1).forEach(m => {
+            if (m.role !== 'user' && m.role !== 'assistant') return
+            const side = m.role === 'user' ? 'sent' : 'recv'
             const label = side === 'sent' ? 'You' : 'Pinn'
-            html += `<div class="msg ${side}"><div class="label">${label}</div><div class="bubble">${text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div></div>`
+            const rawText = Array.isArray(m.content) ? (m.content.find(p => p.type === 'text')?.text || '') : (m.content || '')
+            const safe = rawText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')
+            html += `<div class="msg ${side}"><div class="label">${label}</div><div class="bubble">${safe}</div></div>`
           })
           await exportPDF(html)
           return
@@ -922,16 +933,14 @@ STYLE:
           return
         }
 
-        // ── "Show me that image again" / image follow-up ───────────
-        const isImageFollowUp = lastScreenshot && /\b(image|screenshot|screen|photo|picture|that|it|same|again|show|see)\b/i.test(msg)
+        // ── Image follow-up: only re-attach if user explicitly references the screenshot ──
+        const isImageFollowUp = lastScreenshot && /\b(image|screenshot|screen|photo|picture|re-?analyze|look again|that image|the screenshot)\b/i.test(msg)
 
-        const screenshot = pendingScreenshot || (isImageFollowUp ? lastScreenshot : null)
-        pendingScreenshot = null
-        screenshotBtn.classList.remove('active')
+        const screenshot = isImageFollowUp ? lastScreenshot : null
         screenshotPreview.classList.remove('on')
         inputEl.value = ''; inputEl.style.height = 'auto'
         sendBtn.disabled = true
-        addMsg(msg + (screenshot && screenshot !== lastScreenshot ? ' 📸' : isImageFollowUp ? ' 🔁' : ''), 'sent')
+        addMsg(msg + (isImageFollowUp ? ' 🔁' : ''), 'sent')
         askAI(msg, screenshot).finally(() => { sendBtn.disabled = false })
       }
 

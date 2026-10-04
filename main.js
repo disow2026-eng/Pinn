@@ -80,7 +80,7 @@ function createWindow() {
   }
 }
 
-ipcMain.on('close-window', () => win.hide())
+ipcMain.on('close-window', () => { if (win) win.hide() })
 
 ipcMain.on('finish-onboarding', () => {
   win.setSize(340, 360)
@@ -89,14 +89,17 @@ ipcMain.on('finish-onboarding', () => {
 })
 
 ipcMain.on('update-hotkey', (_, newKey) => {
-  globalShortcut.unregisterAll()
   const toggle = () => {
     if (!win) return
     if (win.isVisible()) { win.hide() }
     else { focusAndShow() }
   }
-  try { globalShortcut.register(newKey, toggle) }
-  catch { globalShortcut.register('CommandOrControl+Shift+P', toggle) }
+  const fallback = 'CommandOrControl+Shift+P'
+  globalShortcut.unregisterAll()
+  const ok = newKey && newKey !== fallback
+    ? (() => { try { return globalShortcut.register(newKey, toggle) } catch { return false } })()
+    : false
+  if (!ok) globalShortcut.register(fallback, toggle)
 })
 
 function focusAndShow() {
