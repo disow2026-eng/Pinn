@@ -327,9 +327,33 @@
       #screenshot-preview.on { display: flex; }
       #screenshot-preview button { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 13px; padding: 0; line-height: 1; margin-left: auto; }
       #screenshot-thumb { width: 48px; height: 32px; object-fit: cover; border-radius: 5px; border: 1px solid var(--accent-mid); flex-shrink: 0; }
+
+      /* ── drag & drop overlay ── */
+      #drop-overlay {
+        position: absolute; inset: 0; z-index: 100;
+        border-radius: 20px;
+        background: rgba(26,122,60,0.08);
+        border: 2.5px dashed var(--accent);
+        display: none; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 10px; pointer-events: none;
+        backdrop-filter: blur(2px);
+        transition: opacity 0.15s;
+      }
+      #drop-overlay.on { display: flex; }
+      #drop-overlay .drop-icon { font-size: 32px; }
+      #drop-overlay .drop-label { font-size: 14px; font-weight: 700; color: var(--accent); }
+      #drop-overlay .drop-sub { font-size: 11px; color: var(--text2); }
     </style>
   </head>
   <body>
+
+    <!-- Drag & drop overlay -->
+    <div id="drop-overlay">
+      <div class="drop-icon">📂</div>
+      <div class="drop-label">Drop to analyze</div>
+      <div class="drop-sub">Images (PNG, JPG) · PDFs</div>
+    </div>
 
     <!-- Sessions panel -->
     <div id="sessions-panel" class="slide-panel">
@@ -697,6 +721,74 @@ STYLE:
 
       document.getElementById('clear-screenshot').addEventListener('click', () => {
         screenshotPreview.classList.remove('on')
+      })
+
+      // ── Drag & Drop ────────────────────────────────────────────
+      const dropOverlay = document.getElementById('drop-overlay')
+      let dragCounter = 0  // track nested dragenter/dragleave events
+
+      document.addEventListener('dragenter', e => {
+        e.preventDefault()
+        dragCounter++
+        if (dragCounter === 1) dropOverlay.classList.add('on')
+      })
+      document.addEventListener('dragleave', e => {
+        dragCounter--
+        if (dragCounter === 0) dropOverlay.classList.remove('on')
+      })
+      document.addEventListener('dragover', e => { e.preventDefault() })
+
+      document.addEventListener('drop', async e => {
+        e.preventDefault()
+        dragCounter = 0
+        dropOverlay.classList.remove('on')
+
+        const file = e.dataTransfer.files[0]
+        if (!file) return
+
+        const ext = file.name.split('.').pop().toLowerCase()
+        const isImage = /^(png|jpg|jpeg|gif|webp|bmp)$/.test(ext)
+        const isPDF   = ext === 'pdf'
+
+        if (!isImage && !isPDF) {
+          addMsg('Only images and PDFs are supported.', 'recv')
+          return
+        }
+
+        sendBtn.disabled = true
+
+        if (isImage) {
+          // Read as base64 data URL
+          const reader = new FileReader()
+          reader.onload = async ev => {
+            try {
+              const resized = await resizeImage(ev.target.result, 512)
+              addMsg(`📎 ${file.name}`, 'sent')
+              await askAI('Analyze this image and describe what you see.', resized)
+            } catch (err) {
+              addMsg('Could not read image: ' + err.message, 'recv')
+            } finally { sendBtn.disabled = false }
+          }
+          reader.onerror = () => { addMsg('Could not read file.', 'recv'); sendBtn.disabled = false }
+          reader.readAsDataURL(file)
+
+        } else if (isPDF) {
+          try {
+            const buf = fs.readFileSync(file.path)
+            addMsg(`📄 ${file.name}`, 'sent')
+            typing.classList.add('on')
+            messagesEl.scrollTop = messagesEl.scrollHeight
+            const pdfParse = require('pdf-parse')
+            const data = await pdfParse(buf)
+            const text = data.text.replace(/\s{3,}/g, '\n').trim().slice(0, 14000)
+            if (!text) { addMsg('Could not extract text from this PDF.', 'recv'); sendBtn.disabled = false; typing.classList.remove('on'); return }
+            typing.classList.remove('on')
+            await askAI(`Here is the content of the PDF "${file.name}":\n\n${text}\n\nSummarize the key points.`)
+          } catch (err) {
+            typing.classList.remove('on')
+            addMsg('Could not read PDF: ' + err.message, 'recv')
+          } finally { sendBtn.disabled = false }
+        }
       })
 
       // ── History & Render ───────────────────────────────────────
