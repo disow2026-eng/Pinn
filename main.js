@@ -38,29 +38,25 @@ let selectorWin
 
 function createWindow() {
   const opts = {
-    width: 340,
-    height: 360,
-    minWidth: 280,
-    minHeight: 300,
+    width: 320,
+    height: 260,
+    minWidth: 260,
+    minHeight: 200,
     resizable: true,
     frame: false,
     alwaysOnTop: true,
     skipTaskbar: true,
-    title: '',                // blank title — won't show in window lists
+    title: '',
     focusable: true,
+    transparent: true,
+    backgroundColor: '#00000000',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     }
   }
 
-  if (isMac) {
-    opts.transparent = false
-    opts.hasShadow = true
-  }
-
   if (isWin) {
-    opts.transparent = true
     opts.backgroundMaterial = 'acrylic'
   }
 
@@ -71,9 +67,9 @@ function createWindow() {
   try { onboarded = JSON.parse(fs.readFileSync(settingsFile, 'utf8')).onboarded === true } catch {}
 
   if (!onboarded) {
-    opts.width = 360
-    opts.height = 520
-    opts.minHeight = 480
+    opts.width = 340
+    opts.height = 500
+    opts.minHeight = 460
   }
 
   win = new BrowserWindow(opts)
