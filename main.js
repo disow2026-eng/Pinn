@@ -55,9 +55,8 @@ function createWindow() {
   }
 
   if (isMac) {
-    opts.vibrancy = 'under-window'
-    opts.visualEffectState = 'active'
-    opts.type = 'panel'       // panel windows are excluded from Exposé/Mission Control
+    opts.transparent = false
+    opts.hasShadow = true
   }
 
   if (isWin) {
